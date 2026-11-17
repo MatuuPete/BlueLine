@@ -32,7 +32,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ingest-${{ inputs.job || github.event.schedule }}
+  # Group key = job name. Keep in sync with the "Map schedule to job" step below.
+  group: ingest-${{ inputs.job || (github.event.schedule == '0 11 * * *' && 'daily') || (github.event.schedule == '15 11 * * *' && 'schedule') || (github.event.schedule == '0 15-23,0-4 * * *' && 'injuries') || (github.event.schedule == '0 17,19,21,23 * * *' && 'odds') || (github.event.schedule == '*/15 22,23,0-3 * * *' && 'odds-closing') || (github.event.schedule == '0,15,30,45 4 * * *' && 'odds-closing') || 'unknown' }}
   cancel-in-progress: false
 
 jobs:
@@ -44,6 +45,7 @@ jobs:
       INPUT_DATE: ${{ inputs.date }}
       EVENT_SCHEDULE: ${{ github.event.schedule }}
     steps:
+      # Single source for the command; keep in sync with the concurrency group above.
       - name: Map schedule to job
         id: job
         run: |
