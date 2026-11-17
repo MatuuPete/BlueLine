@@ -65,6 +65,13 @@ export const BOARD_SORTS = [
 export const BoardSortSchema = z.enum(BOARD_SORTS);
 export type BoardSort = z.infer<typeof BoardSortSchema>;
 
+/**
+ * Board filter state (spec §6a).
+ *
+ * Units: `minHitRate`, `minValue` and `minUsage` are percentages (0..100, e.g. 70 = 70%),
+ * but the `prop_metrics` columns `rate_*`, `value` and `usage_l10` are fractions (0..1).
+ * Query code must divide these filter values by 100 before comparing.
+ */
 export const BoardFilterSchema = z.strictObject({
   // Scope
   /** Slate date YYYY-MM-DD (America/New_York). Undefined = today's slate. */

@@ -16,5 +16,5 @@ export const BUILT_IN_PRESETS: BuiltInPreset[] = [
     name: 'Teammate Out Boost',
     filter: { teammateOutOnly: true, minHitRate: 60 },
   },
-  { id: 'plus-money', name: 'Plus-money Value', filter: { oddsMin: 100, minHitRate: 60 } },
+  { id: 'plus-money', name: 'Plus-money Value', filter: { oddsMin: 100, minValue: 5 } },
 ];

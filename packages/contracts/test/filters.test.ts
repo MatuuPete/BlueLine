@@ -147,12 +147,12 @@ describe('constants', () => {
     expect(BOARD_SORTS).toContain(DEFAULT_BOARD_FILTER.sort);
   });
 
-  it('ships the four built-in presets with the agreed filters', () => {
+  it('ships the four built-in presets with the spec §6a filters', () => {
     const byId = Object.fromEntries(BUILT_IN_PRESETS.map((p) => [p.id, p.filter]));
     expect(byId['l10-locks']).toEqual({ window: 'l10', minHitRate: 80, minGames: 8 });
     expect(byId['soft-matchups']).toEqual({ dvpTiers: ['worst'], minHitRate: 60 });
     expect(byId['teammate-out']).toEqual({ teammateOutOnly: true, minHitRate: 60 });
-    expect(byId['plus-money']).toEqual({ oddsMin: 100, minHitRate: 60 });
+    expect(byId['plus-money']).toEqual({ oddsMin: 100, minValue: 5 });
     for (const p of BUILT_IN_PRESETS) expect(() => BoardFilterSchema.parse(p.filter)).not.toThrow();
   });
 });
