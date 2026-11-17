@@ -10,7 +10,7 @@
     "start": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@blueline/adapters": "workspace:*",

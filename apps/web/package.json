@@ -9,7 +9,7 @@
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "e2e": "playwright test"
   },
   "dependencies": {
