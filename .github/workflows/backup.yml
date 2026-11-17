@@ -12,23 +12,33 @@ concurrency:
   group: backup
   cancel-in-progress: false
 
+env:
+  # Must be >= the Neon server major version (pg_dump refuses newer servers).
+  PG_MAJOR: "17"
+
 jobs:
   pg-dump:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Install PostgreSQL client
+      - name: Install PostgreSQL client (PGDG)
         run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          . /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends postgresql-client
+          sudo apt-get install -y --no-install-recommends "postgresql-client-$PG_MAJOR"
+          "/usr/lib/postgresql/$PG_MAJOR/bin/pg_dump" --version
       - name: Dump database
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
         run: |
           set -euo pipefail
           stamp=$(date -u +%Y%m%dT%H%M%SZ)
-          pg_dump --format=custom --no-owner --no-privileges --file "blueline-$stamp.dump" "$DATABASE_URL"
-          pg_restore --list "blueline-$stamp.dump" > /dev/null
+          "/usr/lib/postgresql/$PG_MAJOR/bin/pg_dump" --format=custom --no-owner --no-privileges --file "blueline-$stamp.dump" "$DATABASE_URL"
+          "/usr/lib/postgresql/$PG_MAJOR/bin/pg_restore" --list "blueline-$stamp.dump" > /dev/null
           ls -l blueline-*.dump
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

@@ -32,7 +32,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ingest-${{ inputs.job || github.event.schedule }}
+  group: ingest
   cancel-in-progress: false
 
 jobs:
@@ -40,11 +40,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      SGO_API_KEY: ${{ secrets.SGO_API_KEY }}
-      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-      ODDS_PROVIDER: ${{ secrets.ODDS_PROVIDER }}
-      ODDS_MONTHLY_BUDGET: ${{ secrets.ODDS_MONTHLY_BUDGET }}
       INPUT_JOB: ${{ inputs.job }}
       INPUT_DATE: ${{ inputs.date }}
       EVENT_SCHEDULE: ${{ github.event.schedule }}
@@ -79,6 +74,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Run job
         env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SGO_API_KEY: ${{ secrets.SGO_API_KEY }}
+          THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+          ODDS_PROVIDER: ${{ secrets.ODDS_PROVIDER }}
+          ODDS_MONTHLY_BUDGET: ${{ secrets.ODDS_MONTHLY_BUDGET }}
           JOB: ${{ steps.job.outputs.job }}
         run: |
           date_args=()

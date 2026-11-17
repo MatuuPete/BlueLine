@@ -34,7 +34,8 @@ Repo Settings > Secrets and variables > Actions > New repository secret:
 
 | Secret | Used by | Notes |
 |---|---|---|
-| `DATABASE_URL` | ingest, backup | Neon connection string |
+| `DATABASE_URL` | ingest | Neon connection string |
+| `DATABASE_URL_DIRECT` | backup | Neon DIRECT (non-pooled) connection string; pg_dump does not work through the pooler |
 | `SGO_API_KEY` | ingest | SportsGameOdds |
 | `THE_ODDS_API_KEY` | ingest | The Odds API (fallback provider) |
 | `ODDS_PROVIDER` | ingest | `sportsgameodds` or `theoddsapi` (match the adapter's accepted values) |
@@ -63,11 +64,13 @@ CLI alternative: `gh secret set DATABASE_URL`.
 
 **DST drift:** while EDT (UTC-4) is in effect (roughly early October and the second half of the season from mid-March), every job fires one hour earlier in ET (boxscores at 07:00 ET, closing odds 18:00-00:45 ET). This is accepted: 07:00 daily jobs are harmless, and the closing window still covers evening tip-offs. No duplicate entries are used, to keep GH Actions minutes low. GH cron can also be delayed by several minutes.
 
-Each schedule string maps to a job name in the "Map schedule to job" step; if you edit a cron, edit the `case` too. Concurrency group `ingest-<job or schedule>` with `cancel-in-progress: false` prevents overlapping runs of the same job. Run one manually from Actions > Ingest > Run workflow (choose `job`, optional `date`). A failing run fails the workflow, which emails the repo owner.
+Each schedule string maps to a job name in the "Map schedule to job" step; if you edit a cron, edit the `case` too. All ingest runs share one concurrency group (`ingest`, `cancel-in-progress: false`), so runs queue instead of overlapping (e.g. two jobs firing at the same minute never run precompute concurrently). GitHub keeps at most one pending run per group, so if several queue up behind a long run, older pending ones are dropped; the next cron tick catches up. Run one manually from Actions > Ingest > Run workflow (choose `job`, optional `date`). A failing run fails the workflow, which emails the repo owner.
 
 ## Backups
 
-`.github/workflows/backup.yml` runs a `pg_dump` (custom format) every Sunday 08:00 UTC and uploads `blueline-<timestamp>.dump` as an artifact kept for 30 days. Restore:
+`.github/workflows/backup.yml` runs a `pg_dump` (custom format) every Sunday 08:00 UTC and uploads `blueline-<timestamp>.dump` as an artifact kept for 30 days. The workflow installs `postgresql-client-$PG_MAJOR` from the official PGDG apt repo (signed key) because Ubuntu's default client is too old for Neon. Set `PG_MAJOR` at the top of `backup.yml` to your Neon Postgres major version (currently 17). The secret `DATABASE_URL_DIRECT` must be the direct, non-pooled Neon string. **The artifact is an unencrypted full dump: only use this workflow in a private repository.**
+
+Restore:
 
 ```sh
 gh run download <run-id> -n blueline-pg-dump
@@ -83,3 +86,8 @@ Open `/status` on the deployed site. It shows the last run per job (status, dura
 ## CI
 
 `.github/workflows/ci.yml` runs on PRs and pushes to `main`: install, lint, typecheck, vitest, build, Playwright on fixtures (skipped automatically until `apps/web` has an `e2e` script), gitleaks, and `pnpm audit --prod --audit-level high`. Third-party actions are pinned to full commit SHAs (version in a trailing comment); update them deliberately.
+
+### Triage notes
+
+- **`pnpm audit` failing:** run `pnpm audit --prod --audit-level high` locally, find the vulnerable path with `pnpm why <pkg>`, upgrade the direct dependency (or add a `pnpm.overrides` entry) and re-run. Only if no fix exists and the advisory is not reachable, document the exception in the PR; do not lower the audit level.
+- **gitleaks:** `gitleaks-action` is free for personal-account repos; for organization-owned repos it requires a `GITLEAKS_LICENSE` secret (add it to the `security` job env in `ci.yml`).
