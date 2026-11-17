@@ -1,0 +1,38 @@
+name: Backup
+
+on:
+  schedule:
+    - cron: "0 8 * * 0" # Sunday 03:00 EST / 04:00 EDT
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  pg-dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-client
+      - name: Dump database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          stamp=$(date -u +%Y%m%dT%H%M%SZ)
+          pg_dump --format=custom --no-owner --no-privileges --file "blueline-$stamp.dump" "$DATABASE_URL"
+          pg_restore --list "blueline-$stamp.dump" > /dev/null
+          ls -l blueline-*.dump
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: blueline-pg-dump
+          path: blueline-*.dump
+          retention-days: 30
+          if-no-files-found: error

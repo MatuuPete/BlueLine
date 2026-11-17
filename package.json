@@ -13,6 +13,7 @@
     "typecheck": "turbo run typecheck",
     "test:unit": "vitest run",
     "format": "prettier --write .",
+    "e2e": "corepack pnpm --filter @blueline/web e2e",
     "worker": "corepack pnpm --filter @blueline/worker start"
   },
   "devDependencies": {
