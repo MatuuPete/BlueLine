@@ -1,0 +1,23 @@
+{
+  "name": "@blueline/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@blueline/adapters": "workspace:*",
+    "@blueline/analytics": "workspace:*",
+    "@blueline/contracts": "workspace:*",
+    "@blueline/db": "workspace:*",
+    "commander": "^15.1.0",
+    "tsx": "^4.23.15"
+  }
+}
