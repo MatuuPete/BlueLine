@@ -45,13 +45,19 @@ REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM web_role, worker_role;
 -- Data tables (written by the worker, read by the web app).
 GRANT SELECT ON
   teams, players, games, player_game_logs, injuries, provider_aliases,
-  prop_offers, prop_metrics, team_dvp, raw_payloads, api_usage, job_runs
+  prop_offers, prop_metrics, team_dvp, api_usage, job_runs
 TO web_role;
+-- web_role gets no access to raw_payloads: the web app never reads provider payloads.
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON
   teams, players, games, player_game_logs, injuries, provider_aliases,
   prop_offers, prop_metrics, team_dvp, raw_payloads, api_usage, job_runs
 TO worker_role;
+
+-- prop_current is a VIEW (latest offer per game/player/market/book). REVOKE ALL ON ALL TABLES
+-- covers views but the table grants above do not, so it needs its own grant. Both roles query
+-- it: worker ingest:odds and precompute, web board (books filter) and detail.
+GRANT SELECT ON prop_current TO web_role, worker_role;
 
 -- No sequence grants: the only sequences back identity columns (injuries, job_runs,
 -- prop_offers, raw_payloads), and INSERT on those tables needs no privilege on them.

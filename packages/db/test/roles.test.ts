@@ -115,4 +115,57 @@ describe('roles.sql', () => {
     expect(await allowed('worker_role', 'UPDATE slip_legs SET line = 1')).toBe(false);
     expect(await allowed('worker_role', 'DELETE FROM slip_legs')).toBe(false);
   });
+
+  // Relations each role's code queries (worker jobs, web query modules), tables AND views.
+  const WORKER_READS = [
+    'teams',
+    'players',
+    'games',
+    'player_game_logs',
+    'injuries',
+    'provider_aliases',
+    'prop_offers',
+    'prop_metrics',
+    'team_dvp',
+    'raw_payloads',
+    'api_usage',
+    'job_runs',
+    'prop_current',
+    'slip_legs',
+  ];
+  const WEB_READS = [
+    'teams',
+    'players',
+    'games',
+    'player_game_logs',
+    'injuries',
+    'prop_offers',
+    'prop_metrics',
+    'team_dvp',
+    'api_usage',
+    'job_runs',
+    'prop_current',
+    'users',
+    'user_settings',
+    'favorites',
+    'filter_presets',
+    'slips',
+    'slip_legs',
+  ];
+
+  it('worker_role can SELECT every relation its jobs query (incl. the prop_current view)', async () => {
+    for (const rel of WORKER_READS) {
+      expect(await allowed('worker_role', `SELECT * FROM ${rel}`), rel).toBe(true);
+    }
+  });
+
+  it('web_role can SELECT every relation its queries use (incl. the prop_current view)', async () => {
+    for (const rel of WEB_READS) {
+      expect(await allowed('web_role', `SELECT * FROM ${rel}`), rel).toBe(true);
+    }
+  });
+
+  it('web_role cannot read raw_payloads', async () => {
+    expect(await allowed('web_role', 'SELECT * FROM raw_payloads')).toBe(false);
+  });
 });
