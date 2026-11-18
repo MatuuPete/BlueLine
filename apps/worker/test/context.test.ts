@@ -3,9 +3,9 @@ import { closeDb, rawPayloads, type Db } from '@blueline/db';
 import { createTestDb } from '@blueline/db/testing';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createRecorder, readConfig, REPO_ROOT, resolveDatabaseUrl } from '../src/context';
-import { parseArgs } from '../src/cli';
+import { assertSeedTarget, main, parseArgs } from '../src/cli';
 
 const FIX = join(REPO_ROOT, 'packages', 'adapters', 'fixtures');
 const json = (rel: string) => JSON.parse(readFileSync(join(FIX, rel), 'utf8')) as unknown;
@@ -64,6 +64,7 @@ describe('readConfig', () => {
       sgoApiKey: undefined,
       theOddsApiKey: undefined,
       oddsMonthlyBudget: 2500,
+      rawPayloadRetentionDays: 21,
     });
   });
 
@@ -83,6 +84,25 @@ describe('readConfig', () => {
       theOddsApiKey: 'k',
       oddsMonthlyBudget: 500,
     });
+  });
+
+  it('fails closed: fixture providers are refused against a real database', () => {
+    const real = { DATABASE_URL: 'postgres://u@h/db' };
+    expect(() => readConfig(real)).toThrow(/fixtures/);
+    expect(() => readConfig({ ...real, STATS_PROVIDER: 'espn' })).toThrow(/ODDS_PROVIDER/);
+    expect(() => readConfig({ ...real, ODDS_PROVIDER: 'sgo' })).toThrow(/STATS_PROVIDER/);
+    expect(() => readConfig({ ...real, STATS_PROVIDER: 'espn', ODDS_PROVIDER: ' ' })).toThrow(
+      /ODDS_PROVIDER/,
+    );
+    expect(readConfig({ ...real, STATS_PROVIDER: 'espn', ODDS_PROVIDER: 'sgo' }).oddsProvider).toBe(
+      'sgo',
+    );
+    expect(readConfig({ DATABASE_URL: 'pglite:memory://x' }).statsProvider).toBe('fixtures');
+  });
+
+  it('reads RAW_PAYLOAD_RETENTION_DAYS', () => {
+    expect(readConfig({ RAW_PAYLOAD_RETENTION_DAYS: '7' }).rawPayloadRetentionDays).toBe(7);
+    expect(() => readConfig({ RAW_PAYLOAD_RETENTION_DAYS: '0' })).toThrow(/RETENTION/);
   });
 
   it('rejects unknown providers and bad budgets', () => {
@@ -113,5 +133,33 @@ describe('CLI arguments', () => {
 
   it('rejects unknown jobs', () => {
     expect(() => parseArgs(['ingest:everything'])).toThrow(/Unknown job/);
+  });
+});
+
+describe('CLI safety', () => {
+  it('seed refuses non-pglite database URLs', () => {
+    expect(() => assertSeedTarget('postgres://u@h/db')).toThrow(/refuses/);
+    expect(() => assertSeedTarget('pglite:memory://x')).not.toThrow();
+    expect(() => assertSeedTarget(undefined)).not.toThrow();
+  });
+
+  it('prints a clean one-line error and exits 1 on bad config (no stack)', async () => {
+    const saved = { ...process.env };
+    process.env.DATABASE_URL = 'postgres://u@h/db';
+    delete process.env.STATS_PROVIDER;
+    delete process.env.ODDS_PROVIDER;
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect(await main(['ingest:odds'])).toBe(1);
+      expect(await main(['seed'])).toBe(1);
+      const lines = err.mock.calls.map((c) => String(c[0]));
+      expect(lines).toHaveLength(2);
+      expect(lines[0]).toMatch(/^worker: .*fixtures/);
+      expect(lines[1]).toMatch(/^worker: seed refuses/);
+      expect(lines.every((l) => !l.includes('\n    at '))).toBe(true);
+    } finally {
+      err.mockRestore();
+      process.env = saved;
+    }
   });
 });

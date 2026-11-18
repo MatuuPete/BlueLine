@@ -15,6 +15,7 @@ import { dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseEnv } from 'node:util';
 import { DEFAULT_ODDS_MONTHLY_BUDGET } from './jobs/budget';
+import { DEFAULT_RAW_PAYLOAD_RETENTION_DAYS } from './jobs/boxscores';
 import type { JobContext } from './run-job';
 
 /** The monorepo root (apps/worker/src → ../../..). */
@@ -29,6 +30,7 @@ export interface WorkerConfig {
   sgoApiKey?: string;
   theOddsApiKey?: string;
   oddsMonthlyBudget: number;
+  rawPayloadRetentionDays: number;
 }
 
 function oneOf<T extends string>(name: string, value: string, allowed: readonly T[]): T {
@@ -38,24 +40,55 @@ function oneOf<T extends string>(name: string, value: string, allowed: readonly 
   return value as T;
 }
 
-/** Read and validate the worker's environment. Providers default to fixtures. */
+/**
+ * Read and validate the worker's environment. Providers default to fixtures for local
+ * (PGlite) development only: fixtures against a real database fail closed, so a missing
+ * secret can never ingest fixture data into production.
+ */
 export function readConfig(env: NodeJS.ProcessEnv = process.env): WorkerConfig {
   const budgetRaw = env.ODDS_MONTHLY_BUDGET?.trim();
   const budget = budgetRaw ? Number(budgetRaw) : DEFAULT_ODDS_MONTHLY_BUDGET;
   if (!Number.isInteger(budget) || budget < 0) {
     throw new Error(`ODDS_MONTHLY_BUDGET must be a non-negative integer (got "${budgetRaw}")`);
   }
+  const retentionRaw = env.RAW_PAYLOAD_RETENTION_DAYS?.trim();
+  const retention = retentionRaw ? Number(retentionRaw) : DEFAULT_RAW_PAYLOAD_RETENTION_DAYS;
+  if (!Number.isInteger(retention) || retention < 1) {
+    throw new Error(
+      `RAW_PAYLOAD_RETENTION_DAYS must be a positive integer (got "${retentionRaw}")`,
+    );
+  }
+  const databaseUrl = env.DATABASE_URL?.trim() || DEFAULT_DATABASE_URL;
+  const statsProvider = oneOf(
+    'STATS_PROVIDER',
+    env.STATS_PROVIDER?.trim() || 'fixtures',
+    STATS_PROVIDERS,
+  );
+  const oddsProvider = oneOf(
+    'ODDS_PROVIDER',
+    env.ODDS_PROVIDER?.trim() || 'fixtures',
+    ODDS_PROVIDERS,
+  );
+  if (!databaseUrl.startsWith('pglite:')) {
+    const fixtureOnes = [
+      statsProvider === 'fixtures' ? 'STATS_PROVIDER' : '',
+      oddsProvider === 'fixtures' ? 'ODDS_PROVIDER' : '',
+    ].filter(Boolean);
+    if (fixtureOnes.length > 0) {
+      throw new Error(
+        `${fixtureOnes.join(' and ')} resolve to "fixtures" (unset or blank) but DATABASE_URL is not a pglite: URL. ` +
+          'Refusing to write fixture data to a real database. Set STATS_PROVIDER=espn and ODDS_PROVIDER=sgo|theoddsapi.',
+      );
+    }
+  }
   return {
-    databaseUrl: env.DATABASE_URL?.trim() || DEFAULT_DATABASE_URL,
-    statsProvider: oneOf(
-      'STATS_PROVIDER',
-      env.STATS_PROVIDER?.trim() || 'fixtures',
-      STATS_PROVIDERS,
-    ),
-    oddsProvider: oneOf('ODDS_PROVIDER', env.ODDS_PROVIDER?.trim() || 'fixtures', ODDS_PROVIDERS),
+    databaseUrl,
+    statsProvider,
+    oddsProvider,
     sgoApiKey: env.SGO_API_KEY?.trim() || undefined,
     theOddsApiKey: env.THE_ODDS_API_KEY?.trim() || undefined,
     oddsMonthlyBudget: budget,
+    rawPayloadRetentionDays: retention,
   };
 }
 
@@ -129,6 +162,7 @@ export async function createContext(
     now,
     log: opts.log ?? ((msg) => console.log(msg)),
     oddsMonthlyBudget: config.oddsMonthlyBudget,
+    rawPayloadRetentionDays: config.rawPayloadRetentionDays,
   };
   return { ctx, close: () => closeDb(db) };
 }

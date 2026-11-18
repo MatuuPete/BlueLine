@@ -10,6 +10,8 @@ export interface JobContext {
   log: (msg: string) => void;
   /** Monthly odds-provider unit budget (ODDS_MONTHLY_BUDGET). Default 2500. */
   oddsMonthlyBudget?: number;
+  /** raw_payloads older than this many days are deleted by the daily job. Default 21. */
+  rawPayloadRetentionDays?: number;
 }
 
 export type JobOpts = Record<string, string | boolean>;
@@ -51,10 +53,12 @@ export async function runJob(
     ctx.log(`${name}: ok in ${Date.now() - started}ms ${summarize(result)}`);
     return result;
   } catch (err) {
-    const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
+    // Only the message goes to the database; the stack stays in the (private) runner log.
+    const message = err instanceof Error ? err.message : String(err);
+    if (err instanceof Error && err.stack) console.error(err.stack);
     await ctx.db
       .update(jobRuns)
-      .set({ status: 'error', finishedAt: new Date(), error: message.slice(0, 4000) })
+      .set({ status: 'error', finishedAt: new Date(), error: message.slice(0, 500) })
       .where(eq(jobRuns.id, run!.id));
     ctx.log(`${name}: error ${err instanceof Error ? err.message : String(err)}`);
     throw err;

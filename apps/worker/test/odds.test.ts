@@ -144,6 +144,27 @@ describe('ingest:odds', () => {
     expect(newest[0]!.isClosing).toBe(true);
   });
 
+  it('--closing with no game in the window exits early: no provider calls, no units', async () => {
+    const calls: string[] = [];
+    const spy = {
+      ...ctx.odds,
+      getPlayerProps: async () => {
+        calls.push('props');
+        return { offers: [], units: 1 };
+      },
+      getGameLines: async () => {
+        calls.push('lines');
+        return { lines: [], units: 1 };
+      },
+    } as typeof ctx.odds;
+    const res = await ingestOdds(
+      { ...ctx, odds: spy, now: new Date('2026-11-17T12:00:00Z') },
+      { closing: true },
+    );
+    expect(res).toMatchObject({ units: 0, meta: { closing: true, games: 0 } });
+    expect(calls).toEqual([]);
+  });
+
   it('does nothing when no games are scheduled', async () => {
     const res = await ingestOdds(ctx, { date: '2026-12-25' });
     expect(res).toEqual({ units: 0, meta: { date: '2026-12-25', closing: false, games: 0 } });

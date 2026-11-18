@@ -1,5 +1,5 @@
 import { closeDb, desc, jobRuns } from '@blueline/db';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runJob, type JobContext } from '../src/run-job';
 import { makeCtx } from './helpers';
 
@@ -51,5 +51,27 @@ describe('runJob', () => {
     expect(run.status).toBe('error');
     expect(run.error).toContain('provider exploded');
     expect(run.finishedAt).toBeInstanceOf(Date);
+  });
+
+  it('stores only the message (max 500 chars) in job_runs.error and logs the stack to stderr', async () => {
+    ctx = await makeCtx();
+    const stderr = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await expect(
+        runJob(
+          'boom',
+          async () => {
+            throw new Error('x'.repeat(900));
+          },
+          ctx,
+        ),
+      ).rejects.toThrow();
+      const run = await lastRun();
+      expect(run.error).toBe('x'.repeat(500));
+      expect(run.error).not.toContain('\n    at ');
+      expect(stderr).toHaveBeenCalledWith(expect.stringContaining('\n    at '));
+    } finally {
+      stderr.mockRestore();
+    }
   });
 });

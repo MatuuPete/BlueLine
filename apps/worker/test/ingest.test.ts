@@ -7,12 +7,13 @@ import {
   injuries,
   playerGameLogs,
   players,
+  rawPayloads,
   teams,
   type Db,
 } from '@blueline/db';
 import { createTestDb } from '@blueline/db/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { boxscoreDates, ingestBoxscores } from '../src/jobs/boxscores';
+import { boxscoreDates, ingestBoxscores, pruneRawPayloads } from '../src/jobs/boxscores';
 import { ingestInjuries } from '../src/jobs/injuries';
 import { ingestSchedule } from '../src/jobs/schedule';
 import { usageProxy } from '../src/store';
@@ -203,5 +204,40 @@ describe('teams', () => {
       .from(teams)
       .where(and(eq(teams.abbr, 'BOS'), eq(teams.espnId, '2')));
     expect(bos).toMatchObject({ id: 'bos', name: 'Boston Celtics' });
+  });
+});
+
+describe('raw_payloads retention (daily job)', () => {
+  it('ingest:boxscores deletes raw payloads older than the retention window', async () => {
+    const day = 86_400_000;
+    await db.insert(rawPayloads).values([
+      {
+        provider: 'espn',
+        endpoint: '/old',
+        body: {},
+        fetchedAt: new Date(NOON.getTime() - 22 * day),
+      },
+      {
+        provider: 'espn',
+        endpoint: '/edge',
+        body: {},
+        fetchedAt: new Date(NOON.getTime() - 20 * day),
+      },
+    ]);
+    const res = await ingestBoxscores(ctx, {});
+    expect(res.meta).toMatchObject({ prunedRaw: 1 });
+    const left = (await db.select().from(rawPayloads)).map((r) => r.endpoint);
+    expect(left).toContain('/edge');
+    expect(left).not.toContain('/old');
+  });
+
+  it('honours rawPayloadRetentionDays', async () => {
+    await db.insert(rawPayloads).values({
+      provider: 'espn',
+      endpoint: '/e',
+      body: {},
+      fetchedAt: new Date(NOON.getTime() - 3 * 86_400_000),
+    });
+    expect(await pruneRawPayloads({ ...ctx, rawPayloadRetentionDays: 2 })).toBe(1);
   });
 });
