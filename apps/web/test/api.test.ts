@@ -245,6 +245,6 @@ describe('foreignKeyFields', () => {
 describe('status', () => {
   it('returns jobs, budget and row counts', async () => {
     const body = await (await status.GET()).json();
-    expect(body).toMatchObject({ jobs: [], budget: { limit: 500 }, rowCounts: { teams: 2 } });
+    expect(body).toMatchObject({ jobs: [], budget: { limit: 2500 }, rowCounts: { teams: 2 } });
   });
 });
