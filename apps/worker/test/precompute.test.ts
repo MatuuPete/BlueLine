@@ -18,6 +18,7 @@ import {
   and,
   asc,
   closeDb,
+  count,
   eq,
   games,
   injuries,
@@ -541,7 +542,17 @@ describe('precompute', () => {
     expect(res.meta).toMatchObject({ incremental: true, games: 1, rows: 6 });
   });
 
-  it('--incremental rebuilds team_dvp when a newer final game has box lines, else reuses it', async () => {
+  it('--incremental always rebuilds team_dvp, picking up a game that went final', async () => {
+    // A matinee is in progress during the full run (so it is not in team_dvp yet).
+    await db.insert(games).values({
+      id: 'af',
+      season: 2026,
+      date: TODAY,
+      tipAt: new Date('2026-11-17T16:00:00Z'),
+      homeTeamId: 'ccc',
+      awayTeamId: 'bbb',
+      status: 'in_progress',
+    });
     await precompute(ctx, {});
     const bbbGPts = async () => {
       const [r] = await db
@@ -560,17 +571,8 @@ describe('precompute', () => {
     const old = await bbbGPts();
     expect(old.computedAt.toISOString()).toBe(NOON.toISOString());
 
-    // An afternoon game (tipped after the last DvP build) lands with box lines:
-    // bbb gives up 200 to a guard.
-    await db.insert(games).values({
-      id: 'af',
-      season: 2026,
-      date: TODAY,
-      tipAt: new Date('2026-11-17T17:30:00Z'),
-      homeTeamId: 'ccc',
-      awayTeamId: 'bbb',
-      status: 'final',
-    });
+    // It goes final (it tipped before the last DvP build): bbb gave up 200 to a guard.
+    await db.update(games).set({ status: 'final' }).where(eq(games.id, 'af'));
     await db.insert(playerGameLogs).values({
       ...logRow({ playerId: 'p6', teamId: 'ccc', pos: 'G', g: HIST[0]!, i: 0 }),
       gameId: 'af',
@@ -579,7 +581,8 @@ describe('precompute', () => {
     });
     const later = new Date('2026-11-17T21:00:00Z');
     const res = await precompute({ ...ctx, now: later }, { incremental: true });
-    expect((res.meta as { dvpRows: number | null }).dvpRows).toBeGreaterThan(0);
+    const [dvpCount] = await db.select({ n: count() }).from(teamDvp);
+    expect(res.meta).toMatchObject({ incremental: true, dvpRows: dvpCount!.n });
 
     const fresh = await bbbGPts();
     expect(fresh.computedAt.toISOString()).toBe(later.toISOString());
@@ -587,14 +590,6 @@ describe('precompute', () => {
     expect(fresh.rank).not.toBe(old.rank);
     const p1 = await metric(db, 'p1', 'PTS', 'over');
     expect([p1.dvpRank, p1.dvpTier]).toEqual([fresh.rank, dvpTier(fresh.rank)]);
-
-    // Nothing newer since: the next incremental run reuses team_dvp.
-    const res2 = await precompute(
-      { ...ctx, now: new Date('2026-11-17T22:00:00Z') },
-      { incremental: true },
-    );
-    expect((res2.meta as { dvpRows: number | null }).dvpRows).toBeNull();
-    expect((await bbbGPts()).computedAt.toISOString()).toBe(later.toISOString());
   });
 
   it('a full run deletes the rows of finished games', async () => {
@@ -610,6 +605,18 @@ describe('precompute', () => {
     await db.update(games).set({ status: 'postponed' }).where(eq(games.id, 'g1'));
     await precompute(ctx, {});
     expect(await db.select().from(propMetrics)).toEqual([]);
+  });
+
+  it("--incremental deletes the rows of today's finished games only", async () => {
+    await precompute(ctx, {});
+    await db.update(games).set({ status: 'final' }).where(eq(games.id, 'g0'));
+    await db.update(games).set({ status: 'postponed' }).where(eq(games.id, 'g1')); // tomorrow
+    const later = new Date('2026-11-17T23:00:00Z');
+    const res = await precompute({ ...ctx, now: later }, { incremental: true });
+    const rows = await db.select().from(propMetrics);
+    expect(rows.filter((r) => r.gameId === 'g0')).toEqual([]);
+    expect(rows.filter((r) => r.gameId === 'g1')).toHaveLength(2);
+    expect(res.meta).toMatchObject({ incremental: true, finishedDeleted: 6, games: 0 });
   });
 
   it("falls back to last season's minutes for a teammate with none this season", async () => {
