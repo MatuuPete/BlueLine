@@ -1,6 +1,7 @@
 // Shared helpers for /api route handlers: auth, input parsing, uniform JSON errors.
 import type { Db } from '@blueline/db';
 import { getDb } from './db';
+import { clientIp, getRateLimiter, rateLimitResponse } from './rate-limit';
 import { getUserId } from './session';
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const;
@@ -111,8 +112,9 @@ export interface Authed {
 }
 
 /**
- * Wrap a handler: resolves the session (401 without one), hands over db + userId,
- * and turns unexpected throws into a generic 500 (details go to the server log only).
+ * Wrap a handler: resolves the session, applies the rate limit (429 + Retry-After; see
+ * lib/rate-limit.ts), answers 401 without a session, hands over db + userId, and turns
+ * unexpected throws into a generic 500 (details go to the server log only).
  */
 export function authed<A extends unknown[]>(
   handler: (auth: Authed, ...args: A) => Promise<Response>,
@@ -120,6 +122,10 @@ export function authed<A extends unknown[]>(
   return async (...args: A) => {
     try {
       const userId = await getUserId();
+      // Rate limit before anything else: per user, or per IP for unauthenticated callers.
+      const key = userId ?? `ip:${clientIp(args[0] instanceof Request ? args[0] : undefined)}`;
+      const limit = await getRateLimiter().take(key);
+      if (!limit.ok) return rateLimitResponse(limit.retryAfter);
       if (!userId) return unauthorized();
       return await handler({ db: await getDb(), userId }, ...args);
     } catch (err) {
