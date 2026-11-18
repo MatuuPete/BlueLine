@@ -138,6 +138,8 @@ await pool(teamIds, 4, async (id) => {
 await recordInjuries();
 
 const eventIds = [];
+/** Finished dates that actually had completed games. */
+const playedDates = [];
 for (const ymd of [...FINISHED_DATES, ...UPCOMING_DATES]) {
   const sb = await getJson(`/scoreboard?dates=${ymd.replaceAll('-', '')}`);
   const { leagues: _leagues, ...rest } = sb;
@@ -146,6 +148,7 @@ for (const ymd of [...FINISHED_DATES, ...UPCOMING_DATES]) {
     for (const e of sb.events) {
       if (e.competitions[0].status.type.completed) eventIds.push(e.id);
     }
+    if (sb.events.some((e) => e.competitions[0].status.type.completed)) playedDates.push(ymd);
   }
   process.stdout.write(`scoreboard ${ymd}: ${sb.events.length} events\n`);
 }
@@ -161,7 +164,7 @@ await save('manifest.json', {
   source: BASE,
   recordedAt: new Date().toISOString(),
   anchorDate: ANCHOR_DATE,
-  finishedDates: FINISHED_DATES,
+  finishedDates: playedDates,
   upcomingDates: UPCOMING_DATES,
   summaries: eventIds.length,
 });
