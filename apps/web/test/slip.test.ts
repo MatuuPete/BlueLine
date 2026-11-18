@@ -4,6 +4,8 @@ import {
   correlatedKeys,
   formatDecimalOdds,
   jointFromLogs,
+  parseStoredLegs,
+  slipHitEstimate,
   MAX_LEGS,
   slipBody,
   slipOdds,
@@ -141,5 +143,75 @@ describe('formatOdds (settings: American or decimal)', () => {
     expect(formatOdds(150, 'american')).toBe('+150');
     expect(formatOdds(-110, 'decimal')).toBe('1.91');
     expect(formatOdds(150, 'decimal')).toBe('2.50');
+  });
+});
+
+describe('slipHitEstimate (spec §5: independent legs when no games are shared)', () => {
+  const a = leg({ key: 'a', line: 19.5 });
+  const b = leg({ key: 'b', playerId: 'p2', line: 9.5 });
+
+  it('uses the joint hit rate when the legs share games', () => {
+    const logs = new Map([
+      ['a', [g('x', 25), g('y', 18)]],
+      ['b', [g('x', 12), g('y', 15)]],
+    ]);
+    expect(slipHitEstimate([a, b], logs)).toEqual({ kind: 'joint', hits: 1, n: 2, rate: 0.5 });
+  });
+
+  it('multiplies each leg’s own L10 hit rate when no game is shared', () => {
+    // a: 3 of 4 over 19.5; b: 1 of 2 over 9.5 → 0.75 × 0.5.
+    const logs = new Map([
+      ['a', [g('a1', 25), g('a2', 22), g('a3', 10), g('a4', 30), g('a5', 40, { dnp: true, minutes: 0 })]],
+      ['b', [g('b1', 12), g('b2', 3)]],
+    ]);
+    const r = slipHitEstimate([a, b], logs);
+    expect(r?.kind).toBe('independent');
+    expect(r?.rate).toBeCloseTo(0.375);
+  });
+
+  it('only counts the last 10 played games per leg', () => {
+    const many = Array.from({ length: 15 }, (_, i) => g(`m${i}`, i < 5 ? 30 : 0));
+    const logs = new Map([
+      ['a', many],
+      ['b', [g('b1', 12)]],
+    ]);
+    // last 10 of `a` are all misses.
+    expect(slipHitEstimate([a, b], logs)?.rate).toBe(0);
+  });
+
+  it('rate is null when a leg has no played games; null while logs load', () => {
+    const logs = new Map([
+      ['a', [g('a1', 25)]],
+      ['b', [] as GameLogEntry[]],
+    ]);
+    expect(slipHitEstimate([a, b], logs)).toEqual({ kind: 'independent', rate: null });
+    expect(slipHitEstimate([a, b], new Map())).toBeNull();
+  });
+});
+
+describe('parseStoredLegs (localStorage is untrusted)', () => {
+  it('keeps valid legs and drops malformed ones', () => {
+    const good = leg();
+    const raw = JSON.stringify([
+      good,
+      { ...good, key: 'x', market: 'NOPE' },
+      { ...good, key: 'y', side: 'sideways' },
+      { ...good, key: 'z', line: 'abc' },
+      { ...good, key: 'w', price: 'free' },
+      null,
+      42,
+      { ...good, key: 'v', price: null },
+    ]);
+    expect(parseStoredLegs(raw).map((l) => l.key)).toEqual([good.key, 'v']);
+  });
+  it('garbage, non-arrays and duplicates', () => {
+    expect(parseStoredLegs('{not json')).toEqual([]);
+    expect(parseStoredLegs('{"a":1}')).toEqual([]);
+    expect(parseStoredLegs(null)).toEqual([]);
+    expect(parseStoredLegs(JSON.stringify([leg(), leg()]))).toHaveLength(1);
+  });
+  it(`keeps at most ${MAX_LEGS}`, () => {
+    const many = Array.from({ length: 20 }, (_, i) => leg({ key: `k${i}`, playerId: `p${i}` }));
+    expect(parseStoredLegs(JSON.stringify(many))).toHaveLength(MAX_LEGS);
   });
 });

@@ -43,6 +43,12 @@ const list = <T extends z.ZodType>(item: T) => z.preprocess(toList, z.array(item
 const optNumber = (schema: z.ZodType<number>) => z.preprocess(toNumber, schema).optional();
 const flag = () => z.preprocess(toBoolean, z.boolean()).default(false);
 
+/** YYYY-MM-DD that names a real day (rejects 2026-13-01, 2026-02-30). */
+export function isCalendarDate(ymd: string): boolean {
+  const d = new Date(`${ymd}T12:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === ymd;
+}
+
 const percent = z.number().min(0).max(100);
 const nonNegInt = z.number().int().min(0);
 const dvpRank = z.number().int().min(1).max(30);
@@ -78,6 +84,7 @@ export const BoardFilterSchema = z.strictObject({
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine(isCalendarDate, 'Not a real calendar date')
     .optional(),
   /** Internal game ids. */
   games: list(z.string().min(1).max(64)),

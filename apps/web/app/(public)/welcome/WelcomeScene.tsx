@@ -18,9 +18,10 @@ export function WelcomeScene({
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [paused, setPaused] = useState(false);
   return (
-    <>
+    <div className={styles.wrap}>
       {/* R18: IntroScene renders its own <main>; nothing here wraps it in another. */}
       <IntroScene
+        className={styles.scene}
         theme={theme}
         paused={paused}
         onTogglePause={() => setPaused((p) => !p)}
@@ -29,9 +30,10 @@ export function WelcomeScene({
         enterHref="/welcome/enter"
         slate={slate}
       />
-      <div className={styles.legal} data-theme={theme}>
+      {/* Overlaid on the scene's bottom band, so it is on the first screen. */}
+      <footer className={styles.legal} data-theme={theme}>
         <Disclaimer />
-      </div>
-    </>
+      </footer>
+    </div>
   );
 }

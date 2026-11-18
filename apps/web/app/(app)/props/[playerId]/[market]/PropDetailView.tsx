@@ -41,7 +41,7 @@ import {
   type SplitContext,
 } from '../../../../../lib/detail-splits';
 import { formatOdds, type OddsFormat } from '../../../../../lib/odds-format';
-import { monogram, shortDate, tipTimeET } from '../../../../../lib/time';
+import { dateTimeET, monogram, shortDate, tipTimeET } from '../../../../../lib/time';
 import { useSlip } from '../../../_shell/SlipContext';
 import { useFavorites } from '../../../_board/useFavorites';
 import styles from './detail.module.css';
@@ -634,7 +634,7 @@ export function PropDetailView({
                     return (
                       <li key={`${m.book}:${m.capturedAt}:${i}`} className={styles.move}>
                         <span className={styles.muted}>
-                          {shortDate(m.capturedAt.slice(0, 10))} {tipTimeET(m.capturedAt).replace(' ET', '')} ·{' '}
+                          {dateTimeET(m.capturedAt)} ·{' '}
                           {BOOK_SHORT[m.book]}
                         </span>
                         <span className={styles.mono}>{formatLine(m.line)}</span>

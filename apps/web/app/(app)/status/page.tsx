@@ -2,14 +2,14 @@ import { getStatus } from '@blueline/db/queries/status';
 import type { Metadata } from 'next';
 import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
-import { shortDate, tipTimeET } from '../../../lib/time';
+import { dateTimeET } from '../../../lib/time';
 import styles from '../_ui/page.module.css';
 import own from './status.module.css';
 
 export const metadata: Metadata = { title: 'Data status' };
 export const dynamic = 'force-dynamic';
 
-const when = (iso: string) => `${shortDate(iso.slice(0, 10))} ${tipTimeET(iso)}`;
+const when = (iso: string) => `${dateTimeET(iso)} ET`;
 const RESULT = { ok: 'OK', error: 'Error', running: 'Running' } as const;
 
 /** Job health, odds budget and table sizes (read-only). */

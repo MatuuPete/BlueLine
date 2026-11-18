@@ -9,7 +9,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import {
   correlatedKeys,
   formatDecimalOdds,
-  jointFromLogs,
+  slipHitEstimate,
   slipBody,
   slipOdds,
   type SlipLeg,
@@ -19,41 +19,62 @@ import { CloseIcon } from './icons';
 import { useSlip } from './SlipContext';
 import styles from './slip.module.css';
 
-const logCache = new Map<string, Promise<GameLogEntry[] | null>>();
+const logCache = new Map<string, Promise<GameLogEntry[]>>();
 
-/** One player's game log (via the detail API), cached per player/market/game for the session. */
-function fetchLogs(leg: SlipLeg): Promise<GameLogEntry[] | null> {
+/**
+ * One player's game log (via the detail API), cached per player/market/game for the
+ * session. A failed fetch is evicted so the next attempt retries.
+ */
+function fetchLogs(leg: SlipLeg): Promise<GameLogEntry[]> {
   const id = `${leg.playerId}:${leg.market}:${leg.gameId}`;
   let p = logCache.get(id);
   if (!p) {
     const url = `/api/props/${encodeURIComponent(leg.playerId)}/${encodeURIComponent(leg.market)}?gameId=${encodeURIComponent(leg.gameId)}`;
     p = fetch(url)
-      .then((r) => (r.ok ? (r.json() as Promise<PropDetail>) : null))
-      .then((d) => d?.logs ?? null)
-      .catch(() => null);
+      .then(async (r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return ((await r.json()) as PropDetail).logs;
+      })
+      .catch((err: unknown) => {
+        logCache.delete(id);
+        throw err;
+      });
     logCache.set(id, p);
   }
   return p;
 }
 
-function useJointRate(legs: SlipLeg[], enabled: boolean) {
+/** Slip hit estimate: joint over shared games, else independent legs (spec §5). */
+function useHitEstimate(legs: SlipLeg[], enabled: boolean) {
   const [logs, setLogs] = useState<Map<string, GameLogEntry[]>>(new Map());
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (!enabled || legs.length < 2) return;
     let live = true;
-    void Promise.all(legs.map(async (l) => [l.key, await fetchLogs(l)] as const)).then(
+    Promise.all(legs.map(async (l) => [l.key, await fetchLogs(l)] as const)).then(
       (pairs) => {
         if (!live) return;
-        const m = new Map<string, GameLogEntry[]>();
-        for (const [k, v] of pairs) if (v) m.set(k, v);
-        setLogs(m);
+        setFailed(false);
+        setLogs(new Map(pairs));
+      },
+      () => {
+        if (live) setFailed(true);
       },
     );
     return () => {
       live = false;
     };
-  }, [legs, enabled]);
-  return legs.length < 2 ? null : jointFromLogs(legs, logs);
+  }, [legs, enabled, attempt]);
+  const estimate = legs.length < 2 ? null : slipHitEstimate(legs, logs);
+  return {
+    estimate,
+    failed: failed && estimate === null,
+    retry: () => {
+      setFailed(false);
+      setAttempt((n) => n + 1);
+    },
+  };
 }
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled])';
@@ -67,7 +88,8 @@ export function SlipDrawer() {
   const ref = useRef<HTMLElement>(null);
   const [name, setName] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const joint = useJointRate(legs, open);
+  const hit = useHitEstimate(legs, open);
+  const est = hit.estimate;
   const odds = slipOdds(legs);
   const correlated = correlatedKeys(legs);
   const body = slipBody(name.trim() || defaultName(), legs);
@@ -223,16 +245,27 @@ export function SlipDrawer() {
                   <div>
                     <dt>Hit together</dt>
                     <dd className={styles.big}>
-                      {joint && joint.rate !== null ? `${Math.round(joint.rate * 100)}%` : '—'}
+                      {est && est.rate !== null ? `${Math.round(est.rate * 100)}%` : '—'}
                     </dd>
                     <dd className={styles.small}>
-                      {legs.length < 2
-                        ? 'Add a second leg'
-                        : joint === null
-                          ? 'Loading game logs'
-                          : joint.n === 0
-                            ? 'No games all these players played'
-                            : `${joint.hits} of ${joint.n} shared games`}
+                      {legs.length < 2 ? (
+                        'Add a second leg'
+                      ) : hit.failed ? (
+                        <>
+                          Game logs unavailable.{' '}
+                          <button type="button" className={styles.retry} onClick={hit.retry}>
+                            Retry
+                          </button>
+                        </>
+                      ) : est === null ? (
+                        'Loading game logs'
+                      ) : est.kind === 'joint' ? (
+                        `${est.hits} of ${est.n} shared games`
+                      ) : est.rate === null ? (
+                        'A leg has no recent games'
+                      ) : (
+                        'Legs treated as independent (no shared games)'
+                      )}
                     </dd>
                   </div>
                 </dl>

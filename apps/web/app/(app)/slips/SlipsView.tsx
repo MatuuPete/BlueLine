@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { formatDecimalOdds } from '../../../lib/slip';
-import { shortDate } from '../../../lib/time';
+import { dayET } from '../../../lib/time';
 import styles from '../_ui/page.module.css';
 import own from './slips.module.css';
 
@@ -79,7 +79,7 @@ export function SlipsView({ slips }: { slips: SlipDTO[] }) {
                 <div className={styles.titleBlock}>
                   <h2 className={styles.h2}>{s.name}</h2>
                   <p className={styles.muted}>
-                    Saved {shortDate(s.createdAt.slice(0, 10))} · {s.legs.length}{' '}
+                    Saved {dayET(s.createdAt)} · {s.legs.length}{' '}
                     {s.legs.length === 1 ? 'leg' : 'legs'}
                     {s.book ? ` · ${BOOK_LABELS[s.book]}` : ''}
                     {s.stake !== null ? ` · stake ${s.stake}` : ''}

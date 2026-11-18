@@ -65,3 +65,31 @@ describe('time and name helpers', () => {
     expect(monogram('Karl-Anthony Towns Jr.')).toBe('KT');
   });
 });
+
+describe('time helpers never throw on bad input', () => {
+  it('impossible or malformed dates come back as-is', async () => {
+    const t = await import('../lib/time');
+    expect(t.slateLabel('2026-13-01')).toBe('2026-13-01');
+    expect(t.shortDate('2026-02-30')).toBe('2026-02-30');
+    expect(t.addDaysYmd('nope', 1)).toBe('nope');
+    expect(t.tipTimeET('not-a-date')).toBe('');
+    expect(t.tipClockET('not-a-date')).toBe('');
+    expect(t.validYmd('2026-02-30')).toBe(false);
+    expect(t.validYmd('2026-11-18')).toBe(true);
+  });
+  it('ET calendar day from an ISO timestamp', async () => {
+    const t = await import('../lib/time');
+    // 01:30 UTC on Nov 19 is still Nov 18 in New York.
+    expect(t.dateTimeET('2026-11-19T01:30:00.000Z')).toBe('Nov 18 8:30 PM');
+    expect(t.dateTimeET('garbage')).toBe('');
+    expect(t.dayET('2026-11-19T01:30:00.000Z')).toBe('Nov 18');
+  });
+});
+
+describe('safeDecode', () => {
+  it('decodes, and returns null instead of throwing on malformed input', async () => {
+    const { safeDecode } = await import('../lib/safe-decode');
+    expect(safeDecode('a%20b')).toBe('a b');
+    expect(safeDecode('%E0%A4%A')).toBeNull();
+  });
+});

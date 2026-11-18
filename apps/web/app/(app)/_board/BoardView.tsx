@@ -157,16 +157,6 @@ export function BoardView({
       </section>
 
       <div className={styles.wrap}>
-        <div className={styles.railCol}>
-          <FilterRail
-            value={filter}
-            onChange={setFilter}
-            presets={presets}
-            games={gameOptions}
-            onSavePreset={() => setPresetOpen(true)}
-          />
-        </div>
-
         <section aria-labelledby={headingId} className={styles.boardCol}>
           <div className={styles.head}>
             <div className={styles.titleBlock}>
@@ -256,6 +246,15 @@ export function BoardView({
             not counted.
           </p>
         </section>
+        <div className={styles.railCol}>
+          <FilterRail
+            value={filter}
+            onChange={setFilter}
+            presets={presets}
+            games={gameOptions}
+            onSavePreset={() => setPresetOpen(true)}
+          />
+        </div>
       </div>
 
       <FilterSheet

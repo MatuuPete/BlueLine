@@ -188,3 +188,15 @@ describe('DetailSplitSchema', () => {
     expect(() => DetailSplitSchema.parse({ nope: true })).toThrow(ZodError);
   });
 });
+
+describe('BoardFilter date is a real calendar date', () => {
+  it('accepts real dates', () => {
+    expect(parseBoardFilter(new URLSearchParams('date=2026-11-18')).date).toBe('2026-11-18');
+    expect(parseBoardFilter(new URLSearchParams('date=2028-02-29')).date).toBe('2028-02-29');
+  });
+  it('rejects impossible dates that match YYYY-MM-DD', () => {
+    for (const d of ['2026-13-01', '2026-02-30', '2026-00-10', '2026-11-31', '2027-02-29']) {
+      expect(() => parseBoardFilter(new URLSearchParams(`date=${d}`))).toThrow();
+    }
+  });
+});

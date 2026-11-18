@@ -245,3 +245,13 @@
     animation: none;
   }
 }
+
+.retry {
+  min-height: var(--target);
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--brandText);
+  font-weight: 700;
+  text-decoration: underline;
+}

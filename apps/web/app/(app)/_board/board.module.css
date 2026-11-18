@@ -87,6 +87,8 @@
 }
 
 .railCol {
+  /* After the board in the DOM (so the page <h1> comes first), shown on the left. */
+  order: -1;
   flex: 0 0 300px;
   position: sticky;
   top: 16px;
@@ -204,6 +206,28 @@
 .note {
   font-size: 12px;
   color: var(--muted);
+}
+
+/* ---- Sticky "Add to slip" column: the main action stays in view while the
+   13-column table scrolls sideways inside its box. ---- */
+.desktopOnly :global([role='row']) > :last-child {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  box-shadow: -1px 0 0 var(--line2);
+  transition: background-color 0.12s ease;
+}
+
+.desktopOnly :global([role='row']:hover) > :last-child {
+  background: var(--rowHover);
+}
+
+.desktopOnly :global([role='rowgroup']:first-child [role='row']) > :last-child {
+  background: var(--surface);
 }
 
 /* ---- Desktop / phone switch (spec §7: cards under 640px) ---- */

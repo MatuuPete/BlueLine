@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getDb } from '../../../../../lib/db';
 import { requireUserId } from '../../../../../lib/require-user';
+import { safeDecode } from '../../../../../lib/safe-decode';
 import { favKey } from '../../../../../lib/fav-key';
 import { PropDetailView } from './PropDetailView';
 
@@ -26,8 +27,8 @@ export default async function PropDetailPage({
   const userId = await requireUserId();
   const [{ playerId, market }, search] = await Promise.all([params, searchParams]);
   const parsed = PropDetailParamsSchema.safeParse({
-    playerId: decodeURIComponent(playerId),
-    market: decodeURIComponent(market),
+    playerId: safeDecode(playerId),
+    market: safeDecode(market),
     gameId: one(search.gameId) || undefined,
   });
   if (!parsed.success) notFound();

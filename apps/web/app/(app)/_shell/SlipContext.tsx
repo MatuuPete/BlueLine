@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { MAX_LEGS, toggleLeg, type SlipLeg } from '../../../lib/slip';
+import { MAX_LEGS, parseStoredLegs, toggleLeg, type SlipLeg } from '../../../lib/slip';
 
 interface SlipState {
   legs: SlipLeg[];
@@ -28,9 +28,7 @@ const STORAGE_KEY = 'blueline.slip.v1';
 
 function load(): SlipLeg[] {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? (parsed as SlipLeg[]).slice(0, MAX_LEGS) : [];
+    return parseStoredLegs(window.localStorage.getItem(STORAGE_KEY));
   } catch {
     return [];
   }

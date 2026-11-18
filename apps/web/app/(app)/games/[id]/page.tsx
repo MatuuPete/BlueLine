@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation';
 import { getDb } from '../../../../lib/db';
 import { gameLine, gameStatus } from '../../../../lib/game-format';
 import { requireUserId } from '../../../../lib/require-user';
+import { safeDecode } from '../../../../lib/safe-decode';
 import { slateLabel } from '../../../../lib/time';
 import { PropList } from '../../_board/PropList';
 import { favKey } from '../../../../lib/fav-key';
@@ -20,8 +21,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
   const userId = await requireUserId();
-  const id = decodeURIComponent((await params).id);
-  if (id.length === 0 || id.length > 64) notFound();
+  const id = safeDecode((await params).id);
+  if (!id || id.length > 64) notFound();
   const db = await getDb();
   const game = await getGameSummary(db, id);
   if (!game) notFound();

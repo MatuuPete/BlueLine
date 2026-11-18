@@ -7,13 +7,11 @@ import Link from 'next/link';
 import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
 import { gameLine, gameStatus } from '../../../lib/game-format';
-import { addDaysYmd, slateLabel } from '../../../lib/time';
+import { addDaysYmd, slateLabel, validYmd } from '../../../lib/time';
 import styles from '../_ui/page.module.css';
 
 export const metadata: Metadata = { title: 'Games' };
 export const dynamic = 'force-dynamic';
-
-const YMD = /^\d{4}-\d{2}-\d{2}$/;
 
 export default async function GamesPage({
   searchParams,
@@ -23,7 +21,7 @@ export default async function GamesPage({
   await requireUserId();
   const today = slateDate(new Date());
   const raw = (await searchParams).date;
-  const date = typeof raw === 'string' && YMD.test(raw) ? raw : today;
+  const date = typeof raw === 'string' && validYmd(raw) ? raw : today;
   const games = await listGames(await getDb(), date);
   const dayLink = (d: string) => (d === today ? '/games' : `/games?date=${d}`);
 

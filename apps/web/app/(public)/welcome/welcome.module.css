@@ -1,10 +1,32 @@
-/* The responsible-gambling line under the intro scene, on the intro ground. */
+/* The responsible-gambling line, overlaid on a band the scene leaves free at its bottom. */
+.wrap {
+  position: relative;
+}
+
+.scene {
+  padding-bottom: 34px;
+}
+
 .legal {
-  padding: 14px var(--gutter) 18px;
-  background: var(--intro-bg);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 6px var(--gutter) 12px;
   text-align: center;
+  pointer-events: none;
 }
 
 .legal p {
   color: var(--intro-muted);
+}
+
+.legal a {
+  pointer-events: auto;
+}
+
+@media (max-width: 639px) {
+  .scene {
+    padding-bottom: 54px;
+  }
 }

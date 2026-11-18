@@ -5,7 +5,7 @@ import { BOOK_SHORT, Button, Chip, Segmented } from '@blueline/ui';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useId, useState, type FormEvent } from 'react';
-import { applyTheme } from '../../../lib/theme';
+import { chooseTheme } from '../../../lib/settings-client';
 import styles from '../_ui/page.module.css';
 import own from './settings.module.css';
 
@@ -59,8 +59,8 @@ export function SettingsForm({ initial }: { initial: UserSettings }) {
               { value: 'system', label: 'System' },
             ]}
             onChange={(v) => {
-              // Applies now and writes the cookie; userSettings.theme is saved with the form.
-              applyTheme(v === 'system' ? null : v);
+              // Like the top-bar toggle: applies now, writes the cookie, saves userSettings.theme.
+              chooseTheme(v === 'system' ? null : v, true);
               set({ theme: v });
             }}
           />
