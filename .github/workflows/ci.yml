@@ -26,6 +26,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --check .
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test:unit
@@ -42,13 +43,6 @@ jobs:
       - name: Install Playwright browsers
         if: steps.e2e.outputs.present == 'true'
         run: pnpm --filter @blueline/web exec playwright install --with-deps chromium
-      - name: Seed fixture database
-        if: steps.e2e.outputs.present == 'true'
-        env:
-          DATABASE_URL: pglite:./.data/pglite
-          STATS_PROVIDER: fixtures
-          ODDS_PROVIDER: fixtures
-        run: pnpm worker seed
       - name: Playwright e2e (fixtures)
         if: steps.e2e.outputs.present == 'true'
         env:
