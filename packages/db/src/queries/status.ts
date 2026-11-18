@@ -23,18 +23,30 @@ export interface StatusOptions {
   now?: Date;
 }
 
+/** Budget month, 'YYYY-MM' in America/New_York (matches the worker's monthOf). */
+export function nyMonth(now: Date): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+  }).formatToParts(now);
+  const get = (t: string) => parts.find((p) => p.type === t)!.value;
+  return `${get('year')}-${get('month')}`;
+}
+
 /** Last run per job, this month's API usage, and row counts of the data tables. */
 export async function getStatus(db: Db, opts: StatusOptions): Promise<StatusResponse> {
-  const month = (opts.now ?? new Date()).toISOString().slice(0, 7);
+  const month = nyMonth(opts.now ?? new Date());
 
-  // Latest run per job (job_runs is small; dedupe in JS keeps this portable).
-  const runs = await db.select().from(jobRuns).orderBy(desc(jobRuns.startedAt), desc(jobRuns.id));
-  const latest = new Map<string, (typeof runs)[number]>();
-  for (const r of runs) if (!latest.has(r.job)) latest.set(r.job, r);
-  const jobs = [...latest.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([job, r]) => ({
-      job,
+  // Latest run per job: DISTINCT ON reads one row per job, not the whole table.
+  const runs = await db
+    .selectDistinctOn([jobRuns.job])
+    .from(jobRuns)
+    .orderBy(jobRuns.job, desc(jobRuns.startedAt), desc(jobRuns.id));
+  const jobs = runs
+    .sort((a, b) => a.job.localeCompare(b.job))
+    .map((r) => ({
+      job: r.job,
       lastRun: {
         status: r.status,
         startedAt: r.startedAt.toISOString(),

@@ -1,7 +1,7 @@
-import { getStatus } from '@blueline/db/queries/status';
 import type { Metadata } from 'next';
 import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
+import { loadStatus } from '../../../lib/status-data';
 import { dateTimeET } from '../../../lib/time';
 import styles from '../_ui/page.module.css';
 import own from './status.module.css';
@@ -15,11 +15,7 @@ const RESULT = { ok: 'OK', error: 'Error', running: 'Running' } as const;
 /** Job health, odds budget and table sizes (read-only). */
 export default async function StatusPage() {
   await requireUserId();
-  const limit = Number(process.env.ODDS_MONTHLY_BUDGET);
-  const status = await getStatus(await getDb(), {
-    provider: process.env.ODDS_PROVIDER ?? 'fixtures',
-    limit: Number.isFinite(limit) && limit > 0 ? limit : 500,
-  });
+  const status = await loadStatus(await getDb());
   const { used, limit: cap, provider, month } = status.budget;
   const pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
 
