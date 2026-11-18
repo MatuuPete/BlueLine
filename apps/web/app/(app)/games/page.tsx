@@ -1,7 +1,8 @@
 import { slateDate } from '@blueline/db/queries/board';
 import { listGames } from '@blueline/db/queries/games';
-import { buttonClassName, EmptyState } from '@blueline/ui';
+import { EmptyState } from '@blueline/ui';
 import type { Metadata } from 'next';
+import { ButtonLink } from '../../_ui/ButtonLink';
 import Link from 'next/link';
 import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
@@ -36,17 +37,17 @@ export default async function GamesPage({
           </p>
         </div>
         <nav aria-label="Change day" className={styles.row}>
-          <Link href={dayLink(addDaysYmd(date, -1))} className={buttonClassName('secondary')}>
+          <ButtonLink href={dayLink(addDaysYmd(date, -1))} variant="secondary">
             Previous day
-          </Link>
+          </ButtonLink>
           {date !== today ? (
-            <Link href="/games" className={buttonClassName('ghost')}>
+            <ButtonLink href="/games" variant="ghost">
               Today
-            </Link>
+            </ButtonLink>
           ) : null}
-          <Link href={dayLink(addDaysYmd(date, 1))} className={buttonClassName('secondary')}>
+          <ButtonLink href={dayLink(addDaysYmd(date, 1))} variant="secondary">
             Next day
-          </Link>
+          </ButtonLink>
         </nav>
       </div>
 
@@ -56,9 +57,9 @@ export default async function GamesPage({
             title="No games on this day"
             hint="Pick another day, or check the data status if games are missing."
             action={
-              <Link href={dayLink(addDaysYmd(date, 1))} className={buttonClassName('primary')}>
+              <ButtonLink href={dayLink(addDaysYmd(date, 1))} variant="primary">
                 Show the next day
-              </Link>
+              </ButtonLink>
             }
           />
         </div>

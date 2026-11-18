@@ -2,8 +2,9 @@ import { DEFAULT_BOARD_FILTER } from '@blueline/contracts';
 import { queryBoard, slateDate } from '@blueline/db/queries/board';
 import { getGameSummary } from '@blueline/db/queries/games';
 import { listFavorites } from '@blueline/db/queries/user';
-import { buttonClassName, EmptyState } from '@blueline/ui';
+import { EmptyState } from '@blueline/ui';
 import type { Metadata } from 'next';
+import { ButtonLink } from '../../../_ui/ButtonLink';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getDb } from '../../../../lib/db';
@@ -48,12 +49,12 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
             {line ? ` · ${line}` : ''}
           </p>
         </div>
-        <Link
+        <ButtonLink
+          variant="secondary"
           href={`/?games=${encodeURIComponent(game.id)}${game.date !== slateDate(new Date()) ? `&date=${game.date}` : ''}`}
-          className={buttonClassName('secondary')}
         >
           Filter the board to this game
-        </Link>
+        </ButtonLink>
       </div>
       <PropList
         rows={board.rows}
@@ -64,9 +65,9 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
             title="No props for this game yet"
             hint="Lines appear after the odds and precompute jobs run."
             action={
-              <Link href="/games" className={buttonClassName('primary')}>
+              <ButtonLink href="/games" variant="primary">
                 Back to games
-              </Link>
+              </ButtonLink>
             }
           />
         }

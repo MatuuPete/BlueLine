@@ -1,5 +1,5 @@
-import { buttonClassName } from '@blueline/ui';
 import type { Metadata } from 'next';
+import { ButtonLink } from '../_ui/ButtonLink';
 import { Standalone } from '../_ui/Standalone';
 
 export const metadata: Metadata = { title: 'Offline' };
@@ -13,9 +13,9 @@ export default function OfflinePage() {
         This page needs a connection. The last board you loaded is still readable from the board
         tab.
       </p>
-      <a href="/" className={buttonClassName('primary')}>
+      <ButtonLink href="/" prefetch={false}>
         Open the last board
-      </a>
+      </ButtonLink>
     </Standalone>
   );
 }

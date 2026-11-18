@@ -1,5 +1,5 @@
-import { buttonClassName, EmptyState } from '@blueline/ui';
-import Link from 'next/link';
+import { ButtonLink } from '../../../../_ui/ButtonLink';
+import { EmptyState } from '@blueline/ui';
 
 export default function PropNotFound() {
   return (
@@ -8,9 +8,9 @@ export default function PropNotFound() {
         title="This prop is not on the board"
         hint="The player, market or game was not found. Pick a prop from the board instead."
         action={
-          <Link href="/" className={buttonClassName('primary')}>
+          <ButtonLink href="/" variant="primary">
             Back to the board
-          </Link>
+          </ButtonLink>
         }
       />
     </div>

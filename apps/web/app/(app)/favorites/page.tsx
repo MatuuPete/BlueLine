@@ -2,9 +2,9 @@ import { and, eq, games, inArray, players, propMetrics } from '@blueline/db';
 import { slateDate } from '@blueline/db/queries/board';
 import { metricsToPropRow } from '@blueline/db/queries/detail';
 import { listFavorites } from '@blueline/db/queries/user';
-import { buttonClassName, EmptyState } from '@blueline/ui';
+import { EmptyState } from '@blueline/ui';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { ButtonLink } from '../../_ui/ButtonLink';
 import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
 import { slateLabel } from '../../../lib/time';
@@ -63,9 +63,9 @@ export default async function FavoritesPage() {
             title="No favorites yet"
             hint="Press the star on any prop to follow that player, market and side here."
             action={
-              <Link href="/" className={buttonClassName('primary')}>
+              <ButtonLink href="/" variant="primary">
                 Browse the board
-              </Link>
+              </ButtonLink>
             }
           />
         </div>
@@ -84,9 +84,9 @@ export default async function FavoritesPage() {
                   title="None of your favorites play today"
                   hint="They show up here on days their team plays and lines are posted."
                   action={
-                    <Link href="/games" className={buttonClassName('secondary')}>
+                    <ButtonLink href="/games" variant="secondary">
                       See the schedule
-                    </Link>
+                    </ButtonLink>
                   }
                 />
               }
