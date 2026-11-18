@@ -50,7 +50,16 @@ for (const size of SIZES) {
       test('welcome', async ({ page }) => {
         await page.goto('/welcome');
         await expect(page.getByRole('link', { name: /Enter the board/ })).toBeVisible();
-        await page.waitForTimeout(1500); // let the intro animation settle
+        await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+        // Let the finite intro animations finish (infinite ones never settle).
+        await page.evaluate(() =>
+          Promise.all(
+            document
+              .getAnimations()
+              .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+              .map((a) => a.finished.catch(() => undefined)),
+          ),
+        );
         expect(await scan(page)).toEqual([]);
       });
     });

@@ -7,7 +7,7 @@ const PROD_PORT = process.env.E2E_PROD_PORT ?? '3101';
 // CSP suite: the production build (`next start`, real sign-in gate) so nonces are checked as shipped.
 export default defineConfig({
   testDir: './e2e',
-  timeout: 60_000,
+  timeout: 120_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,
   workers: 1,

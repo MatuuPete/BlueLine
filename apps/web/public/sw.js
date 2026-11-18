@@ -11,12 +11,13 @@ const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 const OFFLINE_URL = '/offline';
 const BOARD_KEY = '/';
+const SHELL_URLS = [OFFLINE_URL, '/icons/192', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(SHELL)
-      .then((cache) => cache.addAll([OFFLINE_URL, '/icons/192', '/manifest.webmanifest']))
+      .then((cache) => cache.addAll(SHELL_URLS))
       .then(() => self.skipWaiting()),
   );
 });
@@ -77,9 +78,17 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Sign-out: drop every cache so no signed-in page stays readable offline.
+// Sign-out: drop every cache (no signed-in page stays readable offline), then re-precache the
+// public shell so the offline fallback keeps working.
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SIGN_OUT') {
-    event.waitUntil(caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))));
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .then(() => caches.open(SHELL))
+        .then((cache) => cache.addAll(SHELL_URLS))
+        .catch(() => undefined),
+    );
   }
 });

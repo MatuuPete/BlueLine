@@ -23,8 +23,8 @@ export default async function SettingsPage() {
         <p className={styles.sub}>Theme, odds format, your sportsbooks and the intro.</p>
       </div>
       <SettingsForm initial={settings} />
-      <section aria-labelledby="account-heading">
-        <h2 id="account-heading" className={styles.sub}>
+      <section className={styles.card} aria-labelledby="account-heading">
+        <h2 id="account-heading" className={styles.h2}>
           Account
         </h2>
         <SignOutButton />
