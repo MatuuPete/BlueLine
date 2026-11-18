@@ -1,0 +1,55 @@
+/* Canvas: MobileBoard.dc.html quick filters toolbar. */
+.row {
+  display: flex;
+  gap: 8px;
+  padding: 12px var(--gutter, 16px);
+  overflow-x: auto;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.row > * {
+  flex: 0 0 auto;
+}
+
+.open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--chrome);
+  color: var(--onChrome);
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.1s ease;
+}
+
+.open:active {
+  transform: translateY(1px);
+}
+
+.open:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.count {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--navActive);
+  color: var(--chrome);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chip {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 14px;
+}
