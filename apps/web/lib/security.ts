@@ -44,7 +44,8 @@ export function securityHeaders(production: boolean): { key: string; value: stri
       ? [
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            // No `preload`: joining the browsers' preload list is hard to undo.
+            value: 'max-age=63072000; includeSubDomains',
           },
         ]
       : []),
@@ -67,10 +68,13 @@ const PUBLIC_EXACT = new Set([
 ]);
 /** Each also covers its sub-paths, e.g. /welcome/enter (sets the seen_intro cookie). */
 const PUBLIC_PREFIXES = ['/welcome', '/api/auth', '/_next', '/icons'];
-/** App-router metadata icons: /icon, /icon.png, /icon-192.png, /apple-icon.png, … */
-const ICON_RE = /^\/(apple-)?icon[\w-]*(\.(png|jpe?g|svg|ico|webp))?$/;
-/** A file at the root of public/ (one path segment), e.g. /logo.svg. Never under /api. */
-const ROOT_STATIC_RE = /^\/[\w.-]+\.(png|jpe?g|gif|svg|ico|webp|avif|txt|xml|webmanifest|woff2?)$/;
+/**
+ * Icon files only: /icon.svg, /icon.png, /icon1.png, /icon-192.png, /icon-512x512.png,
+ * /apple-icon.png, /apple-touch-icon.png, /apple-touch-icon-precomposed.png (+ sized forms).
+ * Any other root file needs a session; add it to PUBLIC_EXACT if it must be public.
+ */
+const ICON_RE =
+  /^\/(?:(?:apple-)?icon(?:\d+|-\d+(?:x\d+)?)?|apple-touch-icon(?:-precomposed)?(?:-\d+x\d+)?)\.(?:png|svg|ico|jpe?g|webp)$/;
 
 /**
  * Routes reachable without a session (spec §8 and ruling R34): sign-in, the intro and its
@@ -79,5 +83,5 @@ const ROOT_STATIC_RE = /^\/[\w.-]+\.(png|jpe?g|gif|svg|ico|webp|avif|txt|xml|web
 export function isPublicPath(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return true;
   if (PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return true;
-  return ICON_RE.test(pathname) || ROOT_STATIC_RE.test(pathname);
+  return ICON_RE.test(pathname);
 }

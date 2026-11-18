@@ -25,7 +25,8 @@ export async function proxy(req: NextRequest, ev: NextFetchEvent) {
 }
 
 export const config = {
-  // Everything except Next's build assets. Prefetches are NOT skipped: they would render
-  // protected pages without the session check.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Everything except Next's build assets: /_next/static/*, exactly /_next/image and exactly
+  // /favicon.ico (anchored, so /favicon.ico.x or /_next/imagex are still gated). Prefetches
+  // are NOT skipped: they would render protected pages without the session check.
+  matcher: ['/((?!_next/static/|_next/image$|favicon\\.ico$).*)'],
 };

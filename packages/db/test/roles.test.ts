@@ -78,6 +78,28 @@ describe('roles.sql', () => {
     ).toBe(true);
   });
 
+  it('identity inserts need no sequence grant, and none is given', async () => {
+    for (const stmt of [
+      "INSERT INTO raw_payloads (provider, endpoint, body) VALUES ('t', 'e', '{}')",
+      "INSERT INTO job_runs (job) VALUES ('t')",
+      "INSERT INTO injuries (player_id, status) VALUES ('p1', 'out')",
+      "INSERT INTO prop_offers (game_id, player_id, market, line, book) VALUES ('g1', 'p1', 'PTS', 20.5, 'fd')",
+    ]) {
+      expect(await allowed('worker_role', stmt), stmt).toBe(true);
+    }
+    const grants = await pg.query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM information_schema.usage_privileges
+       WHERE object_type = 'SEQUENCE' AND grantee IN ('web_role', 'worker_role')`,
+    );
+    expect(grants.rows[0]!.n).toBe(0);
+    const seqSelect = await pg.query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM pg_class c
+       WHERE c.relkind = 'S' AND (has_sequence_privilege('worker_role', c.oid, 'USAGE')
+         OR has_sequence_privilege('worker_role', c.oid, 'SELECT'))`,
+    );
+    expect(seqSelect.rows[0]!.n).toBe(0);
+  });
+
   it('worker_role has no user tables beyond grading slip_legs', async () => {
     expect(await allowed('worker_role', 'SELECT * FROM users')).toBe(false);
     expect(await allowed('worker_role', 'SELECT * FROM slips')).toBe(false);

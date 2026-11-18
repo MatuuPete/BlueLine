@@ -57,6 +57,24 @@ describe('in-memory token bucket', () => {
     expect(await limiter.take('k')).toEqual({ ok: false, retryAfter: 20 });
   });
 
+  it('caps the number of buckets, evicting the least recently used', async () => {
+    const limiter = createMemoryLimiter({ maxKeys: 3 });
+    await limiter.take('a');
+    await limiter.take('b');
+    await limiter.take('c');
+    await limiter.take('a'); // a is now the most recently used
+    await limiter.take('d'); // evicts b
+    expect(limiter.size()).toBe(3);
+    expect(limiter.keys()).toEqual(['c', 'a', 'd']);
+  });
+
+  it('defaults to at most 10k buckets', async () => {
+    const limiter = createMemoryLimiter();
+    for (let i = 0; i < 10_050; i++) await limiter.take(`k${i}`);
+    expect(limiter.size()).toBe(10_000);
+    expect(limiter.keys()[0]).toBe('k50');
+  });
+
   it('sweeps idle, fully refilled buckets periodically', async () => {
     const limiter = createMemoryLimiter();
     await limiter.take('a');
@@ -117,13 +135,13 @@ describe('helpers', () => {
     expect(await res.json()).toEqual({ error: 'rate_limited' });
   });
 
-  it('clientIp reads x-real-ip, then the first x-forwarded-for hop', () => {
-    expect(clientIp(new Request('http://t/', { headers: { 'x-real-ip': '1.2.3.4' } }))).toBe(
+  it('clientIp trusts only x-real-ip (set by Vercel), never the spoofable x-forwarded-for', () => {
+    expect(clientIp(new Request('http://t/', { headers: { 'x-real-ip': ' 1.2.3.4 ' } }))).toBe(
       '1.2.3.4',
     );
     expect(
       clientIp(new Request('http://t/', { headers: { 'x-forwarded-for': '5.6.7.8, 10.0.0.1' } })),
-    ).toBe('5.6.7.8');
+    ).toBe('unknown');
     expect(clientIp(new Request('http://t/'))).toBe('unknown');
     expect(clientIp(undefined)).toBe('unknown');
   });

@@ -2,23 +2,12 @@ import { Button, Disclaimer, Logo } from '@blueline/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { signIn } from '../../auth';
+import { safeCallback } from '../../lib/safe-callback';
 import { getUserId } from '../../lib/session';
+import { signInErrorMessage } from '../../lib/signin-errors';
 import styles from './signin.module.css';
 
 export const metadata: Metadata = { title: 'Sign in · BlueLine' };
-
-const ERRORS: Record<string, string> = {
-  AccessDenied: "This email isn't on the BlueLine allowlist.",
-};
-const GENERIC_ERROR = 'Sign-in failed. Please try again.';
-
-/** Only same-site relative paths; anything else (absolute, protocol-relative) goes home. */
-function safeCallback(raw: string | string[] | undefined): string {
-  const v = Array.isArray(raw) ? raw[0] : raw;
-  if (!v || !v.startsWith('/') || v.startsWith('//') || v.startsWith('/\\')) return '/';
-  if (v === '/signin' || v.startsWith('/signin?') || v.startsWith('/api/')) return '/';
-  return v;
-}
 
 export default async function SignInPage({
   searchParams,
@@ -29,8 +18,7 @@ export default async function SignInPage({
   const redirectTo = safeCallback(params.callbackUrl);
   if (await getUserId()) redirect(redirectTo);
 
-  const code = Array.isArray(params.error) ? params.error[0] : params.error;
-  const error = code ? (ERRORS[code] ?? GENERIC_ERROR) : null;
+  const error = signInErrorMessage(params.error);
 
   async function google() {
     'use server';

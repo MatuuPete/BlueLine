@@ -53,9 +53,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON
   prop_offers, prop_metrics, team_dvp, raw_payloads, api_usage, job_runs
 TO worker_role;
 
--- Identity columns (injuries, job_runs, prop_offers, raw_payloads) need no sequence grant
--- for INSERT; this only covers explicit nextval()/currval() use.
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO worker_role;
+-- No sequence grants: the only sequences back identity columns (injuries, job_runs,
+-- prop_offers, raw_payloads), and INSERT on those tables needs no privilege on them.
+-- (The REVOKE above also strips any sequence grant left by an older version of this file.)
 
 -- User tables (web app only; every query filters by session.user.id).
 GRANT SELECT, INSERT, UPDATE, DELETE ON

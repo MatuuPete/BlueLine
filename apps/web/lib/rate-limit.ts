@@ -16,6 +16,9 @@ interface BucketOptions {
   refillPerMinute?: number;
 }
 
+/** In-memory bucket cap: bounds memory between sweeps (least recently used goes first). */
+export const MAX_MEMORY_KEYS = 10_000;
+
 const MINUTE_MS = 60_000;
 
 /** Whole seconds until `tokens` grows back to 1 (at least 1). */
@@ -24,8 +27,11 @@ function retryAfterSeconds(tokens: number, refillPerMinute: number): number {
   return Math.max(1, Math.ceil(ms / 1000 - 1e-9));
 }
 
-export function createMemoryLimiter(opts: BucketOptions = {}): RateLimiter & { size(): number } {
+export function createMemoryLimiter(
+  opts: BucketOptions & { maxKeys?: number } = {},
+): RateLimiter & { size(): number; keys(): string[] } {
   const capacity = opts.capacity ?? RATE_LIMIT.capacity;
+  const maxKeys = opts.maxKeys ?? MAX_MEMORY_KEYS;
   const refill = opts.refillPerMinute ?? RATE_LIMIT.refillPerMinute;
   const buckets = new Map<string, { tokens: number; at: number }>();
   let lastSweep = Date.now();
@@ -40,6 +46,17 @@ export function createMemoryLimiter(opts: BucketOptions = {}): RateLimiter & { s
     for (const [key, b] of buckets) if (level(b, now) >= capacity) buckets.delete(key);
   }
 
+  /** Store `key` as the most recently used entry (Map order = least to most recent). */
+  function put(key: string, tokens: number, at: number) {
+    buckets.delete(key);
+    while (buckets.size >= maxKeys) {
+      const oldest = buckets.keys().next().value;
+      if (oldest === undefined) break;
+      buckets.delete(oldest);
+    }
+    buckets.set(key, { tokens, at });
+  }
+
   return {
     async take(key) {
       const now = Date.now();
@@ -47,13 +64,14 @@ export function createMemoryLimiter(opts: BucketOptions = {}): RateLimiter & { s
       const b = buckets.get(key);
       const tokens = b ? level(b, now) : capacity;
       if (tokens >= 1) {
-        buckets.set(key, { tokens: tokens - 1, at: now });
+        put(key, tokens - 1, now);
         return { ok: true };
       }
-      buckets.set(key, { tokens, at: now });
+      put(key, tokens, now);
       return { ok: false, retryAfter: retryAfterSeconds(tokens, refill) };
     },
     size: () => buckets.size,
+    keys: () => [...buckets.keys()],
   };
 }
 
@@ -133,13 +151,14 @@ export function getRateLimiter(): RateLimiter {
   return shared;
 }
 
-/** Best-effort client IP: Vercel sets x-real-ip; otherwise the first x-forwarded-for hop. */
+/**
+ * Client IP for signed-out callers. Only `x-real-ip` is trusted: Vercel's edge sets it and
+ * overwrites any client-sent value. `x-forwarded-for` is ignored because a client can prepend
+ * any address to it (one bucket per forged IP would defeat the limit). Behind another proxy,
+ * make it set x-real-ip; without the header every signed-out caller shares one bucket.
+ */
 export function clientIp(req: Request | undefined): string {
-  if (!req) return 'unknown';
-  const real = req.headers.get('x-real-ip')?.trim();
-  if (real) return real;
-  const first = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  return first || 'unknown';
+  return req?.headers.get('x-real-ip')?.trim() || 'unknown';
 }
 
 export function rateLimitResponse(retryAfter: number): Response {

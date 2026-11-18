@@ -118,7 +118,7 @@ Google sign-in also requires `email_verified`. The same email via Google or GitH
 | `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | From the Google OAuth client |
 | `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` | From the GitHub OAuth app |
 | `ALLOWED_EMAILS` | Comma list, case-insensitive, e.g. `me@example.com, partner@example.com`. Empty = nobody. Removing an email ends that person's session on their next request. |
-| `AUTH_URL` | Only when self-hosting behind a proxy (e.g. `https://blueline.example.com`). On Vercel the host is trusted automatically. |
+| `AUTH_URL` / `AUTH_TRUST_HOST` | Not needed on Vercel (host trusted automatically). Self-hosting or `next start` locally in production mode: set `AUTH_URL=https://blueline.example.com` or `AUTH_TRUST_HOST=true`, otherwise Auth.js logs `UntrustedHost` and everyone stays signed out (fails closed). |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Optional. Shared rate-limit buckets across serverless instances (Upstash Redis free tier > REST API). Unset = per-instance in-memory buckets. |
 | `AUTH_DEV_BYPASS` | `1` = signed in as `dev-user` without OAuth. Ignored when `NODE_ENV=production`. Never set it on Vercel. |
 
@@ -126,9 +126,11 @@ Google sign-in also requires `email_verified`. The same email via Google or GitH
 
 ### 3. What the app enforces
 
-- `apps/web/proxy.ts` (Next 16's renamed `middleware.ts`) runs before every request except `/_next/static`, `/_next/image` and `/favicon.ico`: without a session, pages redirect to `/signin?callbackUrl=...` and `/api/*` answers 401. Public: `/signin`, `/welcome` (and `/welcome/*`), `/offline`, `/api/health`, `/api/auth/*`, `/manifest.webmanifest`, `/sw.js`, `/icons/*`, `/icon*`, `/apple-icon*` and single-segment static files in `public/`.
-- CSP with a per-request nonce (sent to the app as the `x-nonce` request header), set by the proxy. HSTS (production), `nosniff`, `Referrer-Policy`, `Permissions-Policy` and `X-Frame-Options: DENY` come from `next.config.ts`.
-- Every `/api` route goes through `authed()` (`apps/web/lib/api.ts`): a token bucket of 60 requests/min per user (per IP when signed out), 429 with `Retry-After` when exceeded.
+- `apps/web/proxy.ts` (Next 16's renamed `middleware.ts`) runs before every request except `/_next/static/*`, `/_next/image` and `/favicon.ico`: without a session, pages redirect to `/signin?callbackUrl=...` and `/api/*` answers 401. Public: `/signin`, `/welcome` (and `/welcome/*`), `/offline`, `/api/health`, `/api/auth/*`, `/manifest.webmanifest`, `/manifest.json`, `/sw.js`, `/robots.txt`, `/icons/*`, and the icon files `/icon.svg`, `/icon.png`, `/icon<N>.png`, `/icon-<size>.png`, `/apple-icon.png`, `/apple-touch-icon[-precomposed].png`. Any other file in `public/` needs a session; add it to `PUBLIC_EXACT` in `apps/web/lib/security.ts` if it must be public.
+- **The proxy is a first gate, not the authorization layer.** It lets server actions posted to public pages (e.g. `/signin`, `/welcome`) through. Every server action, and every server component or route handler that touches user data, must call `getUserId()` (`apps/web/lib/session.ts`) itself and treat `null` as signed out. `/api` routes do this via `authed()`.
+- Sign-in redirect targets (`callbackUrl`) go through `safeCallback()` (`apps/web/lib/safe-callback.ts`): same-origin paths only.
+- CSP with a per-request nonce (sent to the app as the `x-nonce` request header), set by the proxy. HSTS (`max-age=63072000; includeSubDomains`, production only; deliberately no `preload`, which is hard to undo), `nosniff`, `Referrer-Policy`, `Permissions-Policy` and `X-Frame-Options: DENY` come from `next.config.ts`.
+- Every `/api` route goes through `authed()` (`apps/web/lib/api.ts`): a token bucket of 60 requests/min per user (per IP when signed out), 429 with `Retry-After` when exceeded. The IP comes only from `x-real-ip`, which Vercel sets and clients cannot forge; `x-forwarded-for` is ignored. If you self-host behind another proxy, have it set `x-real-ip`, otherwise all signed-out callers share one bucket. In-memory buckets are capped at 10,000 keys (least recently used evicted).
 - Sign-out (`apps/web/app/_auth/SignOutButton.tsx`) clears Cache Storage and messages the service worker (`{ type: 'SIGN_OUT' }`) before ending the session.
 
 ### 4. Database roles (least privilege)

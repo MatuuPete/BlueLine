@@ -1,5 +1,6 @@
 // The proxy's decision for one request, separated from Auth.js so it can be unit-tested.
 import { NextResponse, type NextRequest } from 'next/server';
+import { safeCallback } from './safe-callback';
 import { buildCsp, createNonce, isPublicPath } from './security';
 
 /**
@@ -20,7 +21,9 @@ export function gate(req: NextRequest, opts: { signedIn: boolean; dev: boolean }
       );
     }
     const signin = new URL('/signin', origin);
-    if (pathname !== '/' || search) signin.searchParams.set('callbackUrl', `${pathname}${search}`);
+    // The request path is client-controlled too (e.g. "//evil.com"): same sanitizer as /signin.
+    const callback = safeCallback(`${pathname}${search}`);
+    if (callback !== '/') signin.searchParams.set('callbackUrl', callback);
     return NextResponse.redirect(signin);
   }
 

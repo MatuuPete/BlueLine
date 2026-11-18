@@ -67,6 +67,11 @@ describe('isPublicPath', () => {
     '/icons/icon-192.png',
     '/icon.svg',
     '/apple-icon.png',
+    '/icon1.png',
+    '/icon-192.png',
+    '/icon-512x512.png',
+    '/apple-touch-icon.png',
+    '/apple-touch-icon-precomposed.png',
     '/robots.txt',
   ])('%s is public', (p) => expect(isPublicPath(p)).toBe(true));
 
@@ -83,6 +88,12 @@ describe('isPublicPath', () => {
     '/api/authx',
     '/api/slips/x.png',
     '/api/board.js',
+    '/iconography',
+    '/icon',
+    '/icon-evil',
+    '/icon.svg/x',
+    '/icon.html',
+    '/apple-iconx.png',
   ])('%s is protected', (p) => expect(isPublicPath(p)).toBe(false));
 });
 
@@ -100,9 +111,7 @@ describe('securityHeaders', () => {
   });
 
   it('adds HSTS only in production', () => {
-    expect(asMap(true)['strict-transport-security']).toBe(
-      'max-age=63072000; includeSubDomains; preload',
-    );
+    expect(asMap(true)['strict-transport-security']).toBe('max-age=63072000; includeSubDomains');
   });
 });
 
@@ -133,6 +142,14 @@ describe('gate', () => {
     const a = forwarded(gate(req('/'), { signedIn: true, dev: false }), 'x-nonce');
     const b = forwarded(gate(req('/'), { signedIn: true, dev: false }), 'x-nonce');
     expect(a).not.toBe(b);
+  });
+
+  it('a protocol-relative request path never becomes a callbackUrl', () => {
+    const res = gate(req('//evil.com/x'), { signedIn: false, dev: false });
+    expect(res.status).toBe(307);
+    const loc = new URL(res.headers.get('location')!);
+    expect(loc.origin).toBe('https://blueline.test');
+    expect(loc.searchParams.get('callbackUrl')).toBeNull();
   });
 
   it('unauthenticated page request redirects to /signin with a relative callbackUrl', () => {

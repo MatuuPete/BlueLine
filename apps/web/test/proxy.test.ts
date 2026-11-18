@@ -66,7 +66,26 @@ describe('proxy', () => {
     expect(after.status).toBe(401);
   });
 
-  it('matcher skips Next static assets', () => {
-    expect(config.matcher).toEqual(['/((?!_next/static|_next/image|favicon.ico).*)']);
+  it('matcher skips exactly Next build assets and /favicon.ico', () => {
+    expect(config.matcher).toHaveLength(1);
+    // Next compiles the source with path-to-regexp to the equivalent of ^<source>$.
+    const re = new RegExp(`^${config.matcher[0]}$`);
+    for (const skipped of ['/_next/static/chunks/a.js', '/_next/image', '/favicon.ico']) {
+      expect(re.test(skipped), skipped).toBe(false);
+    }
+    for (const gated of [
+      '/',
+      '/board',
+      '/api/board',
+      '/favicon.ico.evil',
+      '/favicon.icox',
+      '/favicon.ico/x',
+      '/favicon_ico',
+      '/_next/staticx',
+      '/_next/imagex',
+      '/_next/image/x',
+    ]) {
+      expect(re.test(gated), gated).toBe(true);
+    }
   });
 });
