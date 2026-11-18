@@ -1,7 +1,9 @@
 import { getSettings } from '@blueline/db/queries/user';
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
+import { parseTheme, THEME_COOKIE } from '../../../lib/theme';
 import styles from '../_ui/page.module.css';
 import { SettingsForm } from './SettingsForm';
 
@@ -10,7 +12,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
   const userId = await requireUserId();
-  const settings = await getSettings(await getDb(), userId);
+  const [saved, jar] = await Promise.all([getSettings(await getDb(), userId), cookies()]);
+  // The cookie is what this browser renders; show that when it is set.
+  const settings = { ...saved, theme: parseTheme(jar.get(THEME_COOKIE)?.value) ?? saved.theme };
   return (
     <div className={`${styles.page} ${styles.narrow}`}>
       <div className={styles.titleBlock}>

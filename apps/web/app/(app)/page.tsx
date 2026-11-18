@@ -10,7 +10,7 @@ import { getDb } from '../../lib/db';
 import { SEEN_INTRO_COOKIE, shouldShowIntro } from '../../lib/intro';
 import { requireUserId } from '../../lib/require-user';
 import { addDaysYmd } from '../../lib/time';
-import { favKey } from './_board/useFavorites';
+import { favKey } from '../../lib/fav-key';
 import { BoardView } from './_board/BoardView';
 
 export const metadata: Metadata = { title: 'Prop board' };

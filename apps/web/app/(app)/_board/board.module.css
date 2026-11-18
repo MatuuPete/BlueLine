@@ -170,6 +170,11 @@
 }
 
 .results {
+  /* The table's visually-hidden header spans are absolutely positioned; keep them
+     from widening the page past the table's own scroll box. */
+  position: relative;
+  overflow-x: clip;
+  overflow-clip-margin: 4px;
   transition: opacity 0.15s ease;
 }
 

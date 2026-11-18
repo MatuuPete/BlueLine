@@ -610,7 +610,7 @@ export function PropDetailView({
                 })}
               </ul>
             )}
-            {keyOut && withoutRate ? (
+            {keyOut && withoutRate && withoutRate.n > 0 ? (
               <p className={styles.muted}>
                 Without {shortName(keyOut.name)}, {shortName(player.name)} cleared {sideWord.toLowerCase()}{' '}
                 {formatLine(line)} in {withoutRate.hits} of {withoutRate.n} games.

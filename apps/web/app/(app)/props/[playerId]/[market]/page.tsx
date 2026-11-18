@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getDb } from '../../../../../lib/db';
 import { requireUserId } from '../../../../../lib/require-user';
-import { favKey } from '../../../_board/useFavorites';
+import { favKey } from '../../../../../lib/fav-key';
 import { PropDetailView } from './PropDetailView';
 
 export const metadata: Metadata = { title: 'Prop detail' };

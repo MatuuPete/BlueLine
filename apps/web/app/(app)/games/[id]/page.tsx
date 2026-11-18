@@ -12,7 +12,7 @@ import { gameLine, gameStatus } from '../../../../lib/game-format';
 import { requireUserId } from '../../../../lib/require-user';
 import { slateLabel } from '../../../../lib/time';
 import { PropList } from '../../_board/PropList';
-import { favKey } from '../../_board/useFavorites';
+import { favKey } from '../../../../lib/fav-key';
 import styles from '../../_ui/page.module.css';
 
 export const metadata: Metadata = { title: 'Game' };

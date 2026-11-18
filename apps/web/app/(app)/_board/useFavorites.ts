@@ -2,9 +2,7 @@
 
 import type { Market, Side } from '@blueline/contracts';
 import { useCallback, useState } from 'react';
-
-export const favKey = (p: { playerId: string; market: Market; side: Side }) =>
-  `${p.playerId}:${p.market}:${p.side}`;
+import { favKey } from '../../../lib/fav-key';
 
 /** Favorites with optimistic toggles (POST /api/favorites); reverts when the save fails. */
 export function useFavorites(initial: readonly string[]) {
