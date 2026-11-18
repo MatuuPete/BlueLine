@@ -2,7 +2,7 @@ name: Backup
 
 on:
   schedule:
-    - cron: "0 8 * * 0" # Sunday 03:00 EST / 04:00 EDT
+    - cron: '0 8 * * 0' # Sunday 03:00 EST / 04:00 EDT
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ concurrency:
 
 env:
   # Must be >= the Neon server major version (pg_dump refuses newer servers).
-  PG_MAJOR: "17"
+  PG_MAJOR: '17'
 
 jobs:
   pg-dump:
@@ -36,18 +36,26 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends "postgresql-client-$PG_MAJOR"
           "/usr/lib/postgresql/$PG_MAJOR/bin/pg_dump" --version
-      - name: Dump database
+      - name: Dump and encrypt database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_DIRECT }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
           set -euo pipefail
+          if [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "BACKUP_PASSPHRASE secret is missing; refusing to upload an unencrypted dump" >&2
+            exit 1
+          fi
           stamp=$(date -u +%Y%m%dT%H%M%SZ)
           "/usr/lib/postgresql/$PG_MAJOR/bin/pg_dump" --format=custom --no-owner --no-privileges --file "blueline-$stamp.dump" "$DATABASE_URL"
           "/usr/lib/postgresql/$PG_MAJOR/bin/pg_restore" --list "blueline-$stamp.dump" > /dev/null
-          ls -l blueline-*.dump
+          # Passphrase on stdin (fd 0), never on the command line.
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-fd 0 --output "blueline-$stamp.dump.gpg" "blueline-$stamp.dump"
+          shred -u "blueline-$stamp.dump" || rm -f "blueline-$stamp.dump"
+          ls -l blueline-*
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: blueline-pg-dump
-          path: blueline-*.dump
+          path: blueline-*.dump.gpg
           retention-days: 30
           if-no-files-found: error
