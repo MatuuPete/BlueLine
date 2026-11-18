@@ -1,0 +1,50 @@
+/* Canvas: Main.dc.html `role=group` segmented rows. */
+.group {
+  display: grid;
+  gap: 3px;
+  padding: 3px;
+  background: var(--surface2);
+  border-radius: var(--radius-input, 10px);
+}
+
+.option {
+  position: relative;
+  min-height: 38px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* 44px touch target around a 38px control. */
+.option::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--target, 44px);
+  transform: translateY(-50%);
+}
+
+.option:hover {
+  color: var(--ink);
+}
+
+.option:active {
+  transform: translateY(1px);
+}
+
+.on,
+.on:hover {
+  background: var(--segOn);
+  color: var(--segOnFg);
+  box-shadow: var(--segShadow);
+}

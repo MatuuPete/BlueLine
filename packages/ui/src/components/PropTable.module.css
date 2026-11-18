@@ -1,0 +1,51 @@
+/* Canvas: Main.dc.html board box and header row. */
+.box {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card, 16px);
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 1180px;
+  font-size: 14px;
+}
+
+.head {
+  align-items: center;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.th {
+  padding: 12px 8px;
+}
+
+.center {
+  padding: 12px 4px;
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.first {
+  padding-left: 16px;
+}
+
+.last {
+  padding-right: 16px;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

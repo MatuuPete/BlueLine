@@ -1,0 +1,77 @@
+/* Canvas: Main.dc.html strip (sm) and DesignSystem.dc.html signature strip (lg). */
+.strip {
+  --bar: 8px;
+  --half: 18px;
+  --gap: 3px;
+  --rule-w: 1px;
+  --gutter: 1px;
+  --round: 2px;
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--gap);
+  height: calc(var(--half) * 2);
+  flex: 0 0 auto;
+}
+
+.sm {
+  /* defaults above */
+}
+
+.lg {
+  --bar: 16px;
+  --half: 36px;
+  --gap: 6px;
+  --rule-w: 2px;
+  --gutter: 2px;
+  --round: 3px;
+}
+
+.rule {
+  position: absolute;
+  left: calc(var(--gap) * -1);
+  right: calc(var(--gap) * -1);
+  top: var(--half);
+  height: var(--rule-w);
+  background: var(--rule);
+}
+
+.game {
+  width: var(--bar);
+  display: flex;
+  flex-direction: column;
+}
+
+.up {
+  height: var(--half);
+  display: flex;
+  align-items: flex-end;
+}
+
+.down {
+  height: var(--half);
+  display: flex;
+  align-items: flex-start;
+  padding-top: var(--gutter);
+  box-sizing: border-box;
+}
+
+.bar {
+  display: block;
+  width: var(--bar);
+}
+
+.hit {
+  background: var(--brand);
+  border-radius: var(--round) var(--round) 0 0;
+}
+
+.miss {
+  background: var(--miss);
+  border-radius: 0 0 var(--round) var(--round);
+}
+
+.push {
+  background: var(--push);
+  border-radius: 0 0 var(--round) var(--round);
+}

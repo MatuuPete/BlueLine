@@ -1,0 +1,50 @@
+/* Canvas: Main.dc.html opponent-defense cell; MobileBoard.dc.html one-line chip. */
+.chip {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 8px;
+  border-radius: var(--radius-badge, 6px);
+  white-space: nowrap;
+}
+
+.favorable {
+  background: var(--favBg);
+  color: var(--brandText);
+}
+
+.tough {
+  background: var(--toughBg);
+  color: var(--toughFg);
+}
+
+.neutral {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.tier {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.rank {
+  font-size: 11px;
+}
+
+.compact {
+  flex-direction: row;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

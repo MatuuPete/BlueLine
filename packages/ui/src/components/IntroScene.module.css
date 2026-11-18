@@ -1,0 +1,432 @@
+/* Canvas: Intro.dc.html. Colors come from the --intro-* tokens of the scene's data-theme. */
+.scene {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(1100px 520px at 50% 58%, var(--intro-glow), transparent 70%), var(--intro-bg);
+  color: var(--intro-text);
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.3s ease;
+}
+
+.scene :focus-visible {
+  outline: 2px solid var(--intro-stroke);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ---- Court geometry ---- */
+.courtSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.court {
+  fill: none;
+  stroke: var(--intro-court);
+  stroke-width: 1.5;
+}
+
+.court > * {
+  stroke-dasharray: 2600;
+  stroke-dashoffset: 2600;
+  animation: draw 2.8s cubic-bezier(0.6, 0.1, 0.2, 1) forwards;
+}
+
+.court > *:nth-child(2n) {
+  animation-delay: 0.25s;
+}
+
+.court > *:nth-child(3n) {
+  animation-delay: 0.5s;
+}
+
+.ring {
+  fill: none;
+  stroke: var(--intro-stroke);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: ring 4.8s ease-out infinite;
+}
+
+/* ---- Header / footer controls ---- */
+.header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+}
+
+.footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 0 32px 24px;
+}
+
+.slate {
+  margin: 0;
+  font-family: var(--font-mono, 'IBM Plex Mono'), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--intro-muted);
+}
+
+.pause {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--intro-ctrlBd);
+  border-radius: var(--radius-pill, 999px);
+  background: transparent;
+  color: var(--intro-ctrlFg);
+  transition:
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.pause:hover {
+  border-color: var(--intro-stroke);
+}
+
+.pause:active {
+  transform: translateY(1px);
+}
+
+/* ---- Center stack ---- */
+.main {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  padding: 0 0 24px;
+}
+
+.word {
+  margin: 0;
+  padding: 0 16px;
+  font-family: var(--font-display, 'Big Shoulders'), 'Arial Narrow', sans-serif;
+  font-weight: 900;
+  font-size: clamp(84px, 15vw, 228px);
+  line-height: 0.82;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.solid {
+  color: var(--intro-word);
+}
+
+.outline {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--intro-stroke);
+}
+
+.shimmer {
+  background: linear-gradient(100deg, transparent 38%, var(--intro-shine) 50%, transparent 62%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shine 4.2s linear infinite;
+}
+
+.rise {
+  animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.below {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 0 16px;
+  animation-delay: 0.35s;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: var(--intro-text);
+}
+
+.cta {
+  min-height: 56px;
+  padding: 0 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--intro-ctaBg);
+  color: var(--intro-ctaFg);
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  transition:
+    background-color 0.18s ease,
+    transform 0.12s ease;
+}
+
+.cta:hover {
+  background: var(--intro-ctaHover);
+  color: var(--intro-ctaFg);
+  transform: translateY(-2px);
+}
+
+.cta:active {
+  transform: translateY(0);
+}
+
+.arrow {
+  transition: transform 0.18s ease;
+}
+
+.cta:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ---- The line ---- */
+.lineBox {
+  position: relative;
+  width: 100%;
+  height: 240px;
+}
+
+.mask {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+}
+
+.stream {
+  display: flex;
+  gap: 6px;
+  width: max-content;
+  height: 100%;
+  padding-right: 6px;
+  animation: stream 38s linear infinite;
+}
+
+.col {
+  flex: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.upHalf {
+  height: 120px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.downHalf {
+  height: 120px;
+  padding-top: 3px;
+  box-sizing: border-box;
+}
+
+.grow {
+  width: 100%;
+  animation: grow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.growUp {
+  transform-origin: bottom;
+}
+
+.growDown {
+  transform-origin: top;
+}
+
+.breath {
+  width: 100%;
+  height: 100%;
+  animation: breath 4s ease-in-out infinite;
+  transition: filter 0.15s ease;
+}
+
+.breath:hover {
+  filter: brightness(1.35);
+}
+
+.barUp {
+  background: var(--intro-up);
+  box-shadow: var(--intro-upGlow);
+  border-radius: 3px 3px 0 0;
+  transform-origin: bottom;
+}
+
+.barDown {
+  background: var(--intro-down);
+  border-radius: 0 0 3px 3px;
+  transform-origin: top;
+}
+
+.rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 119px;
+  height: 2px;
+  background: var(--intro-rule);
+  box-shadow: var(--intro-ruleGlow);
+}
+
+.pulse {
+  position: absolute;
+  top: 106px;
+  left: -18%;
+  width: 260px;
+  height: 28px;
+  background: radial-gradient(closest-side, var(--intro-pulse), transparent);
+  filter: blur(1px);
+  animation: pulse 3.6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+
+/* The pause button stops every loop. */
+.scene[data-paused='true'] .anim,
+.scene[data-paused='true'] .breath {
+  animation-play-state: paused;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes breath {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.62);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes stream {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    left: -18%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    left: 104%;
+    opacity: 0;
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ring {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@keyframes shine {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* Reduced motion: a still frame. Court fully drawn, no pulse, no rings, no pause control. */
+@media (prefers-reduced-motion: reduce) {
+  .grow,
+  .breath,
+  .rise,
+  .stream,
+  .pulse,
+  .ring,
+  .shimmer {
+    animation: none !important;
+  }
+
+  .court > * {
+    animation: none !important;
+    stroke-dashoffset: 0;
+  }
+
+  .pulse,
+  .ring,
+  .pause {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 16px;
+  }
+
+  .footer {
+    padding: 0 16px 16px;
+  }
+}
