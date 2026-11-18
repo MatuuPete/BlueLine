@@ -13,7 +13,6 @@
     "e2e": "playwright test"
   },
   "dependencies": {
-    "@blueline/adapters": "workspace:*",
     "@blueline/analytics": "workspace:*",
     "@blueline/contracts": "workspace:*",
     "@blueline/db": "workspace:*",

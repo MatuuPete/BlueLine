@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
     '@blueline/contracts',
     '@blueline/db',
     '@blueline/analytics',
-    '@blueline/adapters',
     '@blueline/ui',
   ],
   // PGlite loads its WASM/data files at runtime; keep it out of the server bundle.

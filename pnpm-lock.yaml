@@ -220,9 +220,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@blueline/adapters':
-        specifier: workspace:*
-        version: link:../../packages/adapters
       '@blueline/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
