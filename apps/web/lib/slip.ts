@@ -78,7 +78,7 @@ export function parseStoredLegs(raw: string | null): SlipLeg[] {
   return out;
 }
 
-const sameProp =(a: SlipLeg, b: SlipLeg) =>
+const sameProp = (a: SlipLeg, b: SlipLeg) =>
   a.gameId === b.gameId && a.playerId === b.playerId && a.market === b.market;
 
 /**
@@ -132,13 +132,17 @@ export function jointFromLogs(
   return jointHitRate(inputs);
 }
 
+/** Fewer shared games than this is too thin for a joint rate; fall back to independence. */
+export const MIN_JOINT_GAMES = 5;
+
 export type SlipHitEstimate =
   | { kind: 'joint'; hits: number; n: number; rate: number | null }
   | { kind: 'independent'; rate: number | null };
 
 /**
- * How often the whole slip would have hit. Uses the joint hit rate over shared games;
- * when the legs share none (the usual multi-game slip), falls back to treating the legs
+ * How often the whole slip would have hit. Uses the joint hit rate over shared games
+ * when there are at least 5 of them; otherwise (the usual multi-game slip, or a thin
+ * overlap) falls back to treating the legs
  * as independent: the product of each leg's own L10 hit rate (spec §5).
  * Null while any leg's log is still missing.
  */
@@ -148,7 +152,7 @@ export function slipHitEstimate(
 ): SlipHitEstimate | null {
   const joint = jointFromLogs(legs, logs);
   if (!joint) return null;
-  if (joint.n > 0) return { kind: 'joint', ...joint };
+  if (joint.n >= MIN_JOINT_GAMES) return { kind: 'joint', ...joint };
   let rate = 1;
   for (const leg of legs) {
     const last10 = logs.get(leg.key)!.filter(isPlayed).slice(-10);

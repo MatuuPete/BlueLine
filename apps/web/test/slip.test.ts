@@ -150,18 +150,39 @@ describe('slipHitEstimate (spec §5: independent legs when no games are shared)'
   const a = leg({ key: 'a', line: 19.5 });
   const b = leg({ key: 'b', playerId: 'p2', line: 9.5 });
 
-  it('uses the joint hit rate when the legs share games', () => {
+  it('uses the joint hit rate when the legs share at least 5 games', () => {
     const logs = new Map([
-      ['a', [g('x', 25), g('y', 18)]],
-      ['b', [g('x', 12), g('y', 15)]],
+      ['a', [g('x', 25), g('y', 18), g('z', 22), g('w', 30), g('v', 12)]],
+      ['b', [g('x', 12), g('y', 15), g('z', 3), g('w', 11), g('v', 2)]],
     ]);
-    expect(slipHitEstimate([a, b], logs)).toEqual({ kind: 'joint', hits: 1, n: 2, rate: 0.5 });
+    // Both legs hit on x (25 > 19.5, 12 > 9.5), z? b=3 no; w: a 30, b 11 yes → 2 of 5.
+    expect(slipHitEstimate([a, b], logs)).toEqual({ kind: 'joint', hits: 2, n: 5, rate: 0.4 });
+  });
+
+  it('falls back to independent legs when fewer than 5 games are shared', () => {
+    const logs = new Map([
+      ['a', [g('x', 25), g('y', 18), g('z', 22), g('w', 30)]],
+      ['b', [g('x', 12), g('y', 15), g('z', 3), g('w', 11)]],
+    ]);
+    const r = slipHitEstimate([a, b], logs);
+    expect(r?.kind).toBe('independent');
+    // a: 3 of 4 over 19.5; b: 3 of 4 over 9.5.
+    expect(r?.rate).toBeCloseTo(0.5625);
   });
 
   it('multiplies each leg’s own L10 hit rate when no game is shared', () => {
     // a: 3 of 4 over 19.5; b: 1 of 2 over 9.5 → 0.75 × 0.5.
     const logs = new Map([
-      ['a', [g('a1', 25), g('a2', 22), g('a3', 10), g('a4', 30), g('a5', 40, { dnp: true, minutes: 0 })]],
+      [
+        'a',
+        [
+          g('a1', 25),
+          g('a2', 22),
+          g('a3', 10),
+          g('a4', 30),
+          g('a5', 40, { dnp: true, minutes: 0 }),
+        ],
+      ],
       ['b', [g('b1', 12), g('b2', 3)]],
     ]);
     const r = slipHitEstimate([a, b], logs);
