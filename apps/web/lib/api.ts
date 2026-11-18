@@ -15,10 +15,29 @@ export const uuidParser: Parser<string> = {
       : { success: false, error: { issues: [{ path: [], message: 'Invalid UUID' }] } },
 };
 
-/** True for a Postgres foreign-key violation (SQLSTATE 23503), however the driver wraps it. */
-export function isForeignKeyError(err: unknown): boolean {
-  const e = err as { code?: string; cause?: unknown };
-  return e?.code === '23503' || /foreign key/i.test(String(e?.cause ?? err));
+/**
+ * If `err` is a Postgres foreign-key violation (SQLSTATE 23503), the 400 `fields` to return, else null.
+ * Drizzle wraps driver errors (DrizzleQueryError.cause), so the chain is walked. The failing
+ * column is named from the constraint when the driver reports it; otherwise the field is `_`.
+ */
+export function foreignKeyFields(err: unknown): Record<string, string[]> | null {
+  type E = { code?: string; constraint?: string; cause?: unknown; message?: string };
+  let fk: E | null = null;
+  let cur: unknown = err;
+  for (let depth = 0; depth < 4 && cur && typeof cur === 'object'; depth++) {
+    const e = cur as E;
+    if (e.code === '23503') {
+      fk = e;
+      break;
+    }
+    cur = e.cause;
+  }
+  if (!fk && /foreign key/i.test(String((err as E)?.cause ?? err))) fk = {}; // last resort
+  if (!fk) return null;
+  const c = fk.constraint ?? '';
+  if (c.includes('player_id')) return { playerId: ['unknown player'] };
+  if (c.includes('game_id')) return { gameId: ['unknown game'] };
+  return { _: ['references an unknown player or game'] };
 }
 
 export function json(data: unknown, status = 200): Response {

@@ -44,6 +44,7 @@ beforeAll(async () => {
     { id: 'p1', name: 'Jayson Tatum', teamId: 'bos', position: 'F' },
     { id: 'p2', name: 'Jaylen Brown', teamId: 'bos', position: 'G' },
     { id: 'p3', name: 'Jalen Brunson', teamId: 'nyk', position: 'G' },
+    { id: 'p4', name: 'Old Injury', teamId: 'bos', position: 'C' },
   ]);
   const t = (d: string) => new Date(`${d}T23:30:00Z`);
   await db.insert(games).values([
@@ -74,6 +75,7 @@ beforeAll(async () => {
   await db.insert(injuries).values([
     { playerId: 'p2', teamId: 'bos', status: 'questionable', capturedAt: new Date('2026-11-17T10:00:00Z') },
     { playerId: 'p2', teamId: 'bos', status: 'out', detail: 'knee', capturedAt: new Date('2026-11-18T10:00:00Z') },
+    { playerId: 'p4', teamId: 'bos', status: 'out', capturedAt: new Date('2026-11-17T10:00:00Z') },
     { playerId: 'p3', teamId: 'nyk', status: 'probable', capturedAt: new Date('2026-11-18T10:00:00Z') },
   ]);
   await db.insert(propMetrics).values({
@@ -160,7 +162,7 @@ describe('getPropDetail', () => {
     expect(d!.lineMoves[0]).toMatchObject({ book: 'draftkings', line: 26.5 });
   });
 
-  it('returns the latest injury per player for both teams', async () => {
+  it('reports only the newest injury batch (recovered players are not listed)', async () => {
     const d = await getPropDetail(db, { playerId: 'p1', market: 'PTS', gameId: 'g3' });
     expect(d!.injuries.map((i) => [i.playerId, i.status]).sort()).toEqual([
       ['p2', 'out'],

@@ -20,6 +20,7 @@ import {
   games,
   inArray,
   injuries,
+  max,
   or,
   playerGameLogs,
   players,
@@ -316,33 +317,37 @@ export async function getPropDetail(db: Db, q: PropDetailQuery): Promise<PropDet
     capturedAt: r.capturedAt.toISOString(),
   }));
 
-  // Latest injury snapshot per player on both teams.
-  const injRows = await db
-    .select({
-      playerId: injuries.playerId,
-      name: players.name,
-      teamId: players.teamId,
-      status: injuries.status,
-      detail: injuries.detail,
-      capturedAt: injuries.capturedAt,
-    })
-    .from(injuries)
-    .innerJoin(players, eq(players.id, injuries.playerId))
-    .where(inArray(players.teamId, [teamId, oppTeamId]))
-    .orderBy(desc(injuries.capturedAt), desc(injuries.id));
-  const seen = new Set<string>();
+  // Current injury report = the newest whole-report batch (all rows sharing the newest
+  // captured_at). A player missing from it has recovered, even if an older batch lists him.
+  const [newest] = await db.select({ at: max(injuries.capturedAt) }).from(injuries);
   const injuryList: InjuryDTO[] = [];
-  for (const r of injRows) {
-    if (seen.has(r.playerId)) continue;
-    seen.add(r.playerId);
-    injuryList.push({
-      playerId: r.playerId,
-      name: r.name,
-      teamId: r.teamId!,
-      status: r.status,
-      detail: r.detail,
-      capturedAt: r.capturedAt.toISOString(),
-    });
+  if (newest?.at) {
+    const injRows = await db
+      .select({
+        playerId: injuries.playerId,
+        name: players.name,
+        teamId: players.teamId,
+        status: injuries.status,
+        detail: injuries.detail,
+        capturedAt: injuries.capturedAt,
+      })
+      .from(injuries)
+      .innerJoin(players, eq(players.id, injuries.playerId))
+      .where(and(eq(injuries.capturedAt, newest.at), inArray(players.teamId, [teamId, oppTeamId])))
+      .orderBy(asc(players.name), desc(injuries.id));
+    const seen = new Set<string>();
+    for (const r of injRows) {
+      if (seen.has(r.playerId)) continue;
+      seen.add(r.playerId);
+      injuryList.push({
+        playerId: r.playerId,
+        name: r.name,
+        teamId: r.teamId!,
+        status: r.status,
+        detail: r.detail,
+        capturedAt: r.capturedAt.toISOString(),
+      });
+    }
   }
 
   // Matchup DvP text inputs: the opponent vs this position for the market, both windows.

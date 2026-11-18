@@ -7,6 +7,7 @@ vi.mock('../lib/session', () => ({ getUserId: async () => currentUser }));
 
 const { getDb } = await import('../lib/db');
 const { games, players, teams, users } = await import('@blueline/db');
+const { foreignKeyFields } = await import('../lib/api');
 const health = await import('../app/api/health/route');
 const board = await import('../app/api/board/route');
 const slips = await import('../app/api/slips/route');
@@ -147,6 +148,15 @@ describe('input validation', () => {
     expect(multibyte.status).toBe(413);
   });
 
+  it('content-length over the limit is 413 before the body is read', async () => {
+    const req = new Request('http://t/api/settings', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', 'content-length': '70000' },
+      body: '{}',
+    });
+    expect((await settings.PUT(req)).status).toBe(413);
+  });
+
   it('presets: malformed id is 400', async () => {
     expect((await presets.DELETE(get('/api/presets?id=junk'))).status).toBe(400);
     expect((await presets.DELETE(get('/api/presets'))).status).toBe(400);
@@ -191,6 +201,24 @@ describe('IDOR: user B cannot see or change user A data', () => {
     currentUser = 'userA';
     expect(await (await presets.GET()).json()).toHaveLength(1);
     expect((await presets.DELETE(new Request(`http://t/api/presets?id=${id}`, { method: 'DELETE' }))).status).toBe(200);
+  });
+});
+
+describe('foreignKeyFields', () => {
+  it('detects code 23503 on the error, on cause, and on cause.cause', () => {
+    expect(foreignKeyFields({ code: '23503' })).toEqual({ _: expect.any(Array) });
+    expect(foreignKeyFields({ cause: { code: '23503' } })).toEqual({ _: expect.any(Array) });
+    expect(foreignKeyFields({ cause: { cause: { code: '23503' } } })).not.toBeNull();
+  });
+
+  it('names the failing column from the constraint', () => {
+    expect(foreignKeyFields({ cause: { code: '23503', constraint: 'favorites_player_id_players_id_fk' } })).toEqual({ playerId: ['unknown player'] });
+    expect(foreignKeyFields({ cause: { code: '23503', constraint: 'slip_legs_game_id_games_id_fk' } })).toEqual({ gameId: ['unknown game'] });
+  });
+
+  it('returns null for other errors', () => {
+    expect(foreignKeyFields(new Error('boom'))).toBeNull();
+    expect(foreignKeyFields({ cause: { code: '23505' } })).toBeNull();
   });
 });
 

@@ -1,6 +1,6 @@
 import { FavoriteInputSchema } from '@blueline/contracts';
 import { listFavorites, toggleFavorite } from '@blueline/db/queries/user';
-import { authed, errorResponse, isForeignKeyError, json, parseBody } from '../../../lib/api';
+import { authed, errorResponse, foreignKeyFields, json, parseBody } from '../../../lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,8 +13,9 @@ export const POST = authed(async ({ db, userId }, req: Request) => {
   try {
     return json(await toggleFavorite(db, userId, parsed.data));
   } catch (err) {
-    if (isForeignKeyError(err)) {
-      return errorResponse(400, 'invalid_request', { playerId: ['unknown player'] });
+    const fields = foreignKeyFields(err);
+    if (fields) {
+      return errorResponse(400, 'invalid_request', fields);
     }
     throw err;
   }

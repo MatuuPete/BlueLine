@@ -1,6 +1,6 @@
 import { CreateSlipInputSchema } from '@blueline/contracts';
 import { createSlip, listSlips } from '@blueline/db/queries/user';
-import { authed, errorResponse, isForeignKeyError, json, parseBody } from '../../../lib/api';
+import { authed, errorResponse, foreignKeyFields, json, parseBody } from '../../../lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,8 +13,9 @@ export const POST = authed(async ({ db, userId }, req: Request) => {
     return json(await createSlip(db, userId, parsed.data), 201);
   } catch (err) {
     // An unknown gameId/playerId violates a foreign key: bad input, not a crash.
-    if (isForeignKeyError(err)) {
-      return errorResponse(400, 'invalid_request', { legs: ['unknown game or player'] });
+    const fields = foreignKeyFields(err);
+    if (fields) {
+      return errorResponse(400, 'invalid_request', fields);
     }
     throw err;
   }

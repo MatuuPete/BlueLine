@@ -1,7 +1,13 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { closeDb } from '@blueline/db';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 
 process.env.DATABASE_URL = 'pglite:';
 const { getUserId } = await import('../lib/session');
+const { getDb } = await import('../lib/db');
+
+afterAll(async () => {
+  await closeDb(await getDb());
+});
 
 afterEach(() => {
   vi.unstubAllEnvs();
