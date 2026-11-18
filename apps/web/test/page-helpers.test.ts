@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { filterFromRecord } from '../lib/board-params';
 import { shouldShowIntro } from '../lib/intro';
 import { parseTheme, themeCookie, THEME_SCRIPT } from '../lib/theme';
-import { monogram, shortDate, slateLabel, tipTimeET } from '../lib/time';
+import { monogram, shortDate, slateLabel, tipClockET, tipTimeET } from '../lib/time';
 
 describe('filterFromRecord (R11 for server pages)', () => {
   it('strips unknown keys and parses known ones', () => {
@@ -51,6 +51,9 @@ describe('theme cookie', () => {
 describe('time and name helpers', () => {
   it('tip time in Eastern', () => {
     expect(tipTimeET('2026-11-19T00:30:00.000Z')).toBe('7:30 PM ET');
+  });
+  it('clock time for the intro slate', () => {
+    expect(tipClockET('2026-11-19T00:30:00.000Z')).toBe('7:30');
   });
   it('short and long dates from YYYY-MM-DD', () => {
     expect(shortDate('2026-11-16')).toBe('Nov 16');

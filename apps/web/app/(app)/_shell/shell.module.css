@@ -1,0 +1,304 @@
+/* Canvas: Main.dc.html top bar, MobileBoard.dc.html compact header + 4-tab bar. */
+.frame {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: var(--radius-input);
+  background: var(--brand);
+  color: var(--onBrand);
+  font-weight: 600;
+}
+
+.skip:focus {
+  top: 12px;
+}
+
+/* ---- Top bar ---- */
+.top {
+  background: var(--chrome);
+  color: var(--onChrome);
+}
+
+.topInner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 10px var(--gutter);
+  min-height: 64px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  color: var(--onChrome);
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+  font-size: 15px;
+  font-weight: 500;
+  align-self: stretch;
+  margin: -10px 0;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  color: var(--chromeMuted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.navLink:hover {
+  color: var(--onChrome);
+}
+
+.navLink[aria-current='page'] {
+  color: var(--onChrome);
+  border-bottom-color: var(--navActive);
+}
+
+.spacer {
+  flex: 1 1 24px;
+}
+
+.search {
+  flex: 0 1 260px;
+  min-width: 160px;
+}
+
+.searchInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--chromeInputBd);
+  background: var(--chromeInput);
+  color: var(--onChrome);
+}
+
+.searchInput::placeholder {
+  color: var(--chromeMuted);
+}
+
+.updated {
+  font-size: 13px;
+  color: var(--chromeMuted);
+  white-space: nowrap;
+}
+
+.ctrl,
+.phoneSearch {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--chromeInputBd);
+  background: transparent;
+  color: var(--onChrome);
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.ctrl::after,
+.phoneSearch::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+}
+
+.ctrl:hover,
+.phoneSearch:hover {
+  background: var(--chromeHover);
+}
+
+.ctrl:active,
+.phoneSearch:active {
+  transform: translateY(1px);
+}
+
+.ctrl[aria-current='page'] {
+  border-color: var(--navActive);
+}
+
+.phoneSearch {
+  display: none;
+}
+
+.slipBtn {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--chromeBtnBd);
+  background: var(--brand);
+  color: var(--onBrand);
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.slipBtn:hover {
+  background: var(--primaryHover);
+}
+
+.slipBtn:active {
+  transform: translateY(1px);
+}
+
+.phoneSearchRow {
+  padding: 0 var(--gutter) 12px;
+}
+
+.phoneSearchForm {
+  width: 100%;
+}
+
+/* ---- Content and footer ---- */
+.main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+.footer {
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px var(--gutter) 28px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 24px;
+  border-top: 1px solid var(--line2);
+}
+
+.footLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---- Phone tab bar ---- */
+.tabBar {
+  display: none;
+}
+
+.tab {
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.tab[aria-current='page'] {
+  color: var(--brandText);
+  font-weight: 700;
+}
+
+.tab:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 1100px) {
+  .updated {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .search {
+    order: 10;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .topInner {
+    min-height: 60px;
+    gap: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .nav,
+  .search,
+  .slipBtn {
+    display: none;
+  }
+
+  .phoneSearch {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    background: var(--chromeInput);
+    border-color: var(--chromeInputBd);
+  }
+
+  .ctrl {
+    width: 44px;
+    height: 44px;
+  }
+
+  .frame {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  .tabBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 6px 8px calc(10px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slipBtn,
+  .ctrl,
+  .phoneSearch {
+    transition: none;
+  }
+}

@@ -1,0 +1,363 @@
+/* Canvas: Main.dc.html (slate strip, rail + board) and MobileBoard.dc.html (cards). */
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Slate strip ---- */
+.slate {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.slateInner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 14px var(--gutter);
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.game {
+  flex: 0 0 auto;
+  min-height: 64px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--inputbd);
+  background: var(--bg);
+  color: var(--ink);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.game:hover {
+  border-color: var(--brandText);
+  transform: translateY(-2px);
+}
+
+.game:active {
+  transform: translateY(0);
+}
+
+.game[aria-pressed='true'] {
+  background: var(--gameOnBg);
+  border-color: var(--gameOnBg);
+  color: var(--gameOnFg);
+}
+
+.gameLine {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.gameTitle {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.gameTip,
+.gameSub {
+  font-size: 12px;
+}
+
+.gameOdds {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+}
+
+/* ---- Rail + board ---- */
+.wrap {
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px var(--gutter);
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.railCol {
+  flex: 0 0 300px;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  border-radius: var(--radius-card);
+  scrollbar-width: thin;
+}
+
+.boardCol {
+  flex: 1 1 640px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.h1 {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 52px;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--heading);
+}
+
+.sub {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.dateSeg {
+  width: 200px;
+}
+
+.sortBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sortLabel {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.select {
+  height: var(--target);
+  padding: 0 12px;
+  border: 1px solid var(--inputbd);
+  border-radius: var(--radius-input);
+  background: var(--bg);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.quick {
+  display: none;
+}
+
+.results {
+  transition: opacity 0.15s ease;
+}
+
+.results[data-pending='true'] {
+  opacity: 0.6;
+}
+
+.alert {
+  font-size: 14px;
+  color: var(--dangerFg);
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.pagerText {
+  margin-right: auto;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---- Desktop / phone switch (spec §7: cards under 640px) ---- */
+.phoneOnly {
+  display: none;
+}
+
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phoneEmpty {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--bg);
+}
+
+/* ---- Preset dialog ---- */
+.dialog {
+  width: min(420px, calc(100% - 32px));
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: var(--cardShadow);
+}
+
+.dialog::backdrop {
+  background: var(--scrim);
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+}
+
+.dialogTitle {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 26px;
+  text-transform: uppercase;
+  color: var(--heading);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 1023px) {
+  .railCol {
+    flex-basis: 272px;
+  }
+
+  .h1 {
+    font-size: 44px;
+  }
+}
+
+@media (max-width: 639px) {
+  .slate {
+    display: none;
+  }
+
+  .wrap {
+    padding: 0 0 16px;
+    display: block;
+  }
+
+  .railCol {
+    display: none;
+  }
+
+  .boardCol {
+    gap: 0;
+  }
+
+  /* The navy header continues under the top bar on phones (canvas MobileBoard). */
+  .head {
+    padding: 4px var(--gutter) 14px;
+    background: var(--chrome);
+    color: var(--onChrome);
+    align-items: flex-end;
+  }
+
+  .h1 {
+    font-size: 40px;
+    line-height: 0.9;
+    color: var(--onChrome);
+  }
+
+  .sub {
+    font-size: 13px;
+    color: var(--chromeMuted);
+  }
+
+  .controls {
+    width: 100%;
+  }
+
+  .dateSeg {
+    flex: 1 1 auto;
+  }
+
+  .sortBox {
+    flex: 1 1 auto;
+  }
+
+  .sortLabel {
+    color: var(--chromeMuted);
+  }
+
+  .select {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .quick {
+    display: block;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .results {
+    padding: 14px var(--gutter) 0;
+    background: var(--surface);
+  }
+
+  .alert,
+  .pager,
+  .note {
+    padding: 12px var(--gutter) 0;
+  }
+
+  .desktopOnly {
+    display: none;
+  }
+
+  .phoneOnly {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game,
+  .results {
+    transition: none;
+  }
+
+  .game:hover {
+    transform: none;
+  }
+}

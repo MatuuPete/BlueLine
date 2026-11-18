@@ -1,0 +1,247 @@
+/* Slip drawer: right-side panel on desktop, bottom sheet under 640px. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+}
+
+.drawer {
+  position: relative;
+  width: min(440px, 100%);
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 20px 24px;
+  background: var(--bg);
+  color: var(--ink);
+  border-left: 1px solid var(--line);
+  box-shadow: var(--cardShadow);
+  animation: slideIn 0.22s ease-out;
+}
+
+.drawer:focus {
+  outline: none;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--heading);
+}
+
+.close,
+.remove {
+  width: var(--target);
+  height: var(--target);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-input);
+  background: transparent;
+  color: var(--muted);
+}
+
+.close:hover,
+.remove:hover {
+  background: var(--hoverBg);
+  color: var(--ink);
+}
+
+.legs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.leg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line2);
+}
+
+.legMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.legName {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.legProp {
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.legMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.corr {
+  padding: 1px 6px;
+  border-radius: var(--radius-badge);
+  border: 1px solid var(--inputbd);
+  background: var(--badgeBg);
+  color: var(--badgeFg);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.legPrice {
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.summary {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summary > div {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.summary dt {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.summary dd {
+  margin: 0;
+}
+
+.big {
+  font-family: var(--font-mono), monospace;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--heading);
+}
+
+.small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.saveRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.input {
+  height: var(--target);
+  padding: 0 12px;
+  border: 1px solid var(--inputbd);
+  border-radius: var(--radius-input);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.saveBtn {
+  width: 100%;
+}
+
+.error {
+  font-size: 13px;
+  color: var(--dangerFg);
+}
+
+.saved {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--favBg);
+  font-weight: 600;
+}
+
+@media (max-width: 639px) {
+  .overlay {
+    align-items: flex-end;
+  }
+
+  .drawer {
+    width: 100%;
+    height: auto;
+    max-height: 88dvh;
+    border-left: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    animation-name: slideUp;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(40px);
+      opacity: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    animation: none;
+  }
+}

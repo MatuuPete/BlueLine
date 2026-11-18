@@ -1,0 +1,10 @@
+/* The responsible-gambling line under the intro scene, on the intro ground. */
+.legal {
+  padding: 14px var(--gutter) 18px;
+  background: var(--intro-bg);
+  text-align: center;
+}
+
+.legal p {
+  color: var(--intro-muted);
+}

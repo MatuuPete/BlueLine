@@ -54,3 +54,20 @@ export function monogram(name: string): string {
   if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase();
   return (words[0]!.charAt(0) + words[words.length - 1]!.charAt(0)).toUpperCase();
 }
+
+const clockFmt = new Intl.DateTimeFormat('en-US', {
+  timeZone: TZ,
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+});
+
+/** "7:30" (Eastern, no AM/PM): the intro's mono slate line. */
+export function tipClockET(iso: string): string {
+  return clockFmt
+    .formatToParts(new Date(iso))
+    .filter((p) => p.type === 'hour' || p.type === 'minute' || p.type === 'literal')
+    .map((p) => p.value)
+    .join('')
+    .trim();
+}
