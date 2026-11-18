@@ -1,14 +1,59 @@
+import { Button, Disclaimer, Logo } from '@blueline/ui';
 import type { Metadata } from 'next';
-import { Standalone } from '../_ui/Standalone';
+import { redirect } from 'next/navigation';
+import { signIn } from '../../auth';
+import { safeCallback } from '../../lib/safe-callback';
+import { getUserId } from '../../lib/session';
+import { signInErrorMessage } from '../../lib/signin-errors';
+import styles from './signin.module.css';
 
-export const metadata: Metadata = { title: 'Sign in' };
+export const metadata: Metadata = { title: 'Sign in · BlueLine' };
 
-// Placeholder: Task 13 replaces this page with Auth.js sign-in.
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const redirectTo = safeCallback(params.callbackUrl);
+  if (await getUserId()) redirect(redirectTo);
+
+  const error = signInErrorMessage(params.error);
+
+  async function google() {
+    'use server';
+    await signIn('google', { redirectTo });
+  }
+  async function github() {
+    'use server';
+    await signIn('github', { redirectTo });
+  }
+
   return (
-    <Standalone title="Sign in">
-      <p>Sign-in arrives with the next release. For local development, start the app with
-        AUTH_DEV_BYPASS=1.</p>
-    </Standalone>
+    <main className={styles.page}>
+      <section className={styles.card} aria-labelledby="signin-title">
+        <Logo size={34} wordmark />
+        <h1 id="signin-title" className={styles.title}>
+          Sign in
+        </h1>
+        <p className={styles.lead}>BlueLine is private. Sign in with an approved account.</p>
+        {error ? (
+          <p role="alert" className={styles.error}>
+            {error}
+          </p>
+        ) : null}
+        <form action={google}>
+          <Button type="submit" size="lg" className={styles.button}>
+            Continue with Google
+          </Button>
+        </form>
+        <form action={github}>
+          <Button type="submit" size="lg" variant="secondary" className={styles.button}>
+            Continue with GitHub
+          </Button>
+        </form>
+      </section>
+      <Disclaimer className={styles.disclaimer} />
+    </main>
   );
 }

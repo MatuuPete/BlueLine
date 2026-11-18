@@ -1,14 +1,20 @@
 import { ensureUser } from '@blueline/db/queries/user';
 import { getDb } from './db';
+import { isDevBypass } from './dev-bypass';
 
 export const DEV_USER_ID = 'dev-user';
 
 /**
- * The signed-in user's id, or null. Task 13 swaps the body for Auth.js `auth()`
- * without changing this signature. The dev bypass is ignored in production.
+ * The signed-in user's id (Auth.js `session.user.id`, see auth.config.ts), or null.
+ * With the dev bypass it is always `dev-user`.
+ *
+ * Call this in every server action and every server component or route that reads or writes
+ * user data, and treat null as "not signed in". proxy.ts is only a first gate: it does not
+ * re-check server actions posted to public pages (e.g. /signin, /welcome), so the action
+ * itself must authorize.
  */
 export async function getUserId(): Promise<string | null> {
-  if (process.env.AUTH_DEV_BYPASS === '1' && process.env.NODE_ENV !== 'production') {
+  if (isDevBypass()) {
     await ensureUser(await getDb(), {
       id: DEV_USER_ID,
       email: 'dev@blueline.local',
@@ -16,5 +22,9 @@ export async function getUserId(): Promise<string | null> {
     });
     return DEV_USER_ID;
   }
-  return null;
+  // Imported lazily so the bypass path never loads Auth.js.
+  const { auth } = await import('../auth');
+  const session = await auth();
+  const id = session?.user?.id;
+  return typeof id === 'string' && id.length > 0 ? id : null;
 }

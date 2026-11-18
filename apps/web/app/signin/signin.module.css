@@ -1,0 +1,67 @@
+/* Sign-in page. Every color is a token from @blueline/ui/tokens.css. */
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  min-height: 100dvh;
+  padding: 32px var(--gutter, 16px);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card, 16px);
+  background: var(--bg);
+}
+
+.title {
+  margin: 8px 0 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--heading);
+}
+
+.lead {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--dangerBd);
+  border-radius: var(--radius-input, 10px);
+  background: var(--dangerBg);
+  color: var(--dangerFg);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.button {
+  width: 100%;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.disclaimer {
+  max-width: 400px;
+  text-align: center;
+}
