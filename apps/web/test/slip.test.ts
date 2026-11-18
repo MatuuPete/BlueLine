@@ -133,3 +133,13 @@ describe('slipBody', () => {
     expect(slipBody('x', [leg({ price: null })])).toBeNull();
   });
 });
+
+describe('formatOdds (settings: American or decimal)', () => {
+  it('prints American with a typographic minus, or decimal to two places', async () => {
+    const { formatOdds } = await import('../lib/odds-format');
+    expect(formatOdds(-110, 'american')).toBe('−110');
+    expect(formatOdds(150, 'american')).toBe('+150');
+    expect(formatOdds(-110, 'decimal')).toBe('1.91');
+    expect(formatOdds(150, 'decimal')).toBe('2.50');
+  });
+});

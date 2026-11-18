@@ -9,11 +9,12 @@ import {
   type GameSummary,
   type PresetDTO,
 } from '@blueline/contracts';
-import { Button, EmptyState, HEAT_WINDOWS, MINUS, Segmented, buttonClassName } from '@blueline/ui';
+import { Button, EmptyState, HEAT_WINDOWS, Segmented, buttonClassName } from '@blueline/ui';
 import Link from 'next/link';
 import { useId, useState, useTransition } from 'react';
 import { activeFilterCount } from '../../../lib/board-filter-url';
 import { resetFilter } from '../../../lib/board-presets';
+import { gameLine, gameStatus } from '../../../lib/game-format';
 import { slateLabel, tipTimeET } from '../../../lib/time';
 import { useBoardFilter } from '../../../lib/use-board-filter';
 import { FilterRail } from '../_components/FilterRail';
@@ -34,17 +35,8 @@ const SORT_LABELS: Record<Exclude<BoardSort, 'hitRate'>, string> = {
 };
 
 function gameOdds(g: GameSummary): string {
-  if (g.status === 'final' || g.status === 'in_progress') {
-    const score = `${g.away.abbr} ${g.away.score ?? 0} · ${g.home.abbr} ${g.home.score ?? 0}`;
-    return g.status === 'final' ? `Final · ${score}` : `Live · ${score}`;
-  }
-  const parts: string[] = [];
-  if (g.spread !== null) {
-    const s = g.spread;
-    parts.push(`${g.home.abbr} ${s > 0 ? '+' : s < 0 ? MINUS : ''}${Math.abs(s).toFixed(1)}`);
-  }
-  if (g.total !== null) parts.push(`O/U ${g.total.toFixed(1)}`);
-  return parts.join(' · ') || `${g.propCount} props`;
+  if (g.status === 'scheduled') return gameLine(g) || `${g.propCount} props`;
+  return gameStatus(g);
 }
 
 /** Fields worth saving in a preset: everything off-default except date and paging. */

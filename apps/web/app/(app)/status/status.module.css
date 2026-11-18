@@ -1,0 +1,55 @@
+.result {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-badge);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.result[data-status='ok'] {
+  background: var(--favBg);
+  color: var(--brandText);
+  border-color: transparent;
+}
+
+.result[data-status='error'] {
+  background: var(--dangerBg);
+  color: var(--dangerFg);
+  border-color: var(--dangerBd);
+}
+
+.meter {
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--surface2);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+}
+
+.counts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.count {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.count dd {
+  margin: 0;
+  font-size: 20px;
+}

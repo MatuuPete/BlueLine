@@ -1,0 +1,63 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.odds {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 20px;
+}
+
+.legs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 72px;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  border-top: 1px solid var(--line2);
+  font-size: 14px;
+}
+
+.result,
+.legResult {
+  justify-self: end;
+  padding: 2px 8px;
+  border-radius: var(--radius-badge);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.result[data-result='won'],
+.legResult[data-result='hit'] {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--onBrand);
+}
+
+.result[data-result='lost'],
+.legResult[data-result='miss'] {
+  background: var(--surface2);
+  color: var(--ink);
+}
+
+.error {
+  font-size: 14px;
+  color: var(--dangerFg);
+}
