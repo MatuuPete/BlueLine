@@ -1,5 +1,6 @@
 import type { Job } from '../run-job';
 import { ingestBoxscores } from './boxscores';
+import { dvp } from './dvp';
 import { gradeSlips } from './grade-slips';
 import { ingestInjuries } from './injuries';
 import { ingestOdds } from './odds';
@@ -12,6 +13,7 @@ export const JOB_REGISTRY = {
   'ingest:boxscores': ingestBoxscores,
   'ingest:injuries': ingestInjuries,
   'ingest:odds': ingestOdds,
+  dvp,
   precompute,
   'grade-slips': gradeSlips,
   seed,

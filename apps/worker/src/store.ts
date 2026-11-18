@@ -15,7 +15,7 @@ import { gameIdOf, playerIdOf, teamIdOf } from './ids';
 import type { JobContext } from './run-job';
 
 /** `SET col = excluded.col` for the given columns of an insert … on conflict. */
-function excluded<C extends Record<string, { name: string }>, K extends keyof C & string>(
+export function excluded<C extends Record<string, { name: string }>, K extends keyof C & string>(
   cols: C,
   keys: readonly K[],
 ): Record<K, SQL> {

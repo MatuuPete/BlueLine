@@ -12,6 +12,7 @@ export const JOBS = [
   'ingest:boxscores',
   'ingest:injuries',
   'ingest:odds',
+  'dvp',
   'precompute',
   'grade-slips',
   'seed',
