@@ -9,7 +9,7 @@ const g = globalThis as unknown as { __bluelineDb?: Promise<Db> };
 /**
  * The shared Db. Survives Next dev hot reloads (stored on globalThis). PGlite URLs
  * (the dev default) resolve against the repo root and are migrated once on first use;
- * Postgres URLs are migrated by CI.
+ * Postgres URLs are migrated by .github/workflows/migrate.yml (owner role, on push to main).
  */
 export function getDb(): Promise<Db> {
   g.__bluelineDb ??= (async () => {

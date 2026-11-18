@@ -1,0 +1,52 @@
+name: Migrate
+
+# Applies pending Drizzle migrations to the production database as the Neon OWNER role.
+# Runs on every push to main (a no-op when nothing is pending) and on demand.
+# roles.sql is NOT run here: re-run it by hand after a migration that adds a table
+# (see docs/RUNBOOK.md, "First deploy" and "Migrations").
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL_OWNER: ${{ secrets.DATABASE_URL_OWNER }}
+    steps:
+      - name: Check for the owner secret
+        id: gate
+        run: |
+          if [ -z "$DATABASE_URL_OWNER" ]; then
+            echo "::notice::DATABASE_URL_OWNER is not set; skipping migrations."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.gate.outputs.run == 'true'
+        with:
+          persist-credentials: false
+      - if: steps.gate.outputs.run == 'true'
+        run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: 24
+          cache: pnpm
+      - if: steps.gate.outputs.run == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        if: steps.gate.outputs.run == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_OWNER }}
+        run: pnpm --filter @blueline/db db:migrate
