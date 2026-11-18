@@ -40,9 +40,14 @@ export function QuickFilters({ value, onChange, onOpenFilters }: QuickFiltersPro
         </svg>
         Filters
         {active > 0 ? (
-          <span className={styles.count} aria-label={`${active} active`}>
-            {active}
-          </span>
+          <>
+            <span className={styles.count} aria-hidden="true">
+              {active}
+            </span>
+            <span
+              className={styles.sr}
+            >{`, ${active} active ${active === 1 ? 'filter' : 'filters'}`}</span>
+          </>
         ) : null}
       </button>
       <Chip

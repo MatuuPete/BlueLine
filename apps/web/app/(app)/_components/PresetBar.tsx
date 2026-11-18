@@ -2,6 +2,7 @@
 
 import type { BoardFilter } from '@blueline/contracts';
 import { Button, Chip } from '@blueline/ui';
+import { useId } from 'react';
 import {
   allPresets,
   applyPreset,
@@ -22,9 +23,10 @@ export interface PresetBarProps {
 
 /** Built-in plus saved presets. Pressing one applies it; pressing the active one clears it. */
 export function PresetBar({ value, onChange, presets, onSavePreset }: PresetBarProps) {
+  const headingId = useId();
   return (
-    <section className={styles.bar} aria-labelledby="preset-bar-h">
-      <h3 id="preset-bar-h" className={styles.title}>
+    <section className={styles.bar} aria-labelledby={headingId}>
+      <h3 id={headingId} className={styles.title}>
         Presets
       </h3>
       <div className={styles.grid} role="group" aria-label="Presets">

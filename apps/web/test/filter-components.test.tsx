@@ -50,7 +50,7 @@ describe('filter components (server render smoke)', () => {
     for (const t of ['Filters', 'L10 70%+', 'Overs', 'Soft matchups', 'Teammate out']) {
       expect(html).toContain(t);
     }
-    expect(html).toContain('2 active');
+    expect(html).toContain('2 active filters');
   });
   it('FilterSheet is a modal dialog with a Show N props button; renders nothing when closed', () => {
     const open = renderToStaticMarkup(

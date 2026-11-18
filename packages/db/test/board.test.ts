@@ -500,6 +500,33 @@ beforeAll(async () => {
     }),
   );
 
+  // g4: one row with no rate and no sample in any window (rate NULL, n = 0).
+  await db.insert(games).values({
+    id: 'g4',
+    season: 2026,
+    date: '2026-11-20',
+    tipAt: new Date('2026-11-21T00:00:00Z'),
+    homeTeamId: 'bos',
+    awayTeamId: 'nyk',
+  });
+  await db.insert(players).values({ id: 'pm', name: 'Mike Null', teamId: 'bos', position: 'G' });
+  await db.insert(propMetrics).values({
+    propKey: propKey({ gameId: 'g4', playerId: 'pm', market: 'PTS', side: 'over' }),
+    gameId: 'g4',
+    playerId: 'pm',
+    market: 'PTS',
+    side: 'over',
+    line: 10.5,
+    playerName: 'Mike Null',
+    position: 'G',
+    teamId: 'bos',
+    teamAbbr: 'BOS',
+    oppTeamId: 'nyk',
+    oppAbbr: 'NYK',
+    isHome: true,
+    tipAt: new Date('2026-11-21T00:00:00Z'),
+  });
+
   const at = (hhmm: string) => new Date(`2026-11-18T${hhmm}:00Z`);
   const offer = (
     game: string,
@@ -883,6 +910,18 @@ describe('paging and response shape', () => {
     expect(r).toMatchObject({ rows: [], total: 0, computedAt: null });
     expect(r.filter.date).toBe('2030-01-01');
     expect((await q()).computedAt).toBe('2026-11-18T14:00:00.000Z');
+  });
+});
+
+describe('rows with a NULL rate and n = 0', () => {
+  it('appear without a hit-rate filter but are excluded by any minHitRate', async () => {
+    expect((await q({ date: '2026-11-20' })).rows).toHaveLength(1);
+    expect((await q({ date: '2026-11-20', minHitRate: 1 })).rows).toEqual([]);
+    expect((await q({ date: '2026-11-20', minHitRate: 0 })).rows).toEqual([]);
+    expect((await q({ date: '2026-11-20', window: 'season', minHitRate: 1 })).rows).toEqual([]);
+  });
+  it('are excluded by minGames', async () => {
+    expect((await q({ date: '2026-11-20', minGames: 1 })).rows).toEqual([]);
   });
 });
 
