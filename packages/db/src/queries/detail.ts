@@ -154,6 +154,8 @@ export async function getPropDetail(db: Db, q: PropDetailQuery): Promise<PropDet
   if (!gameId) return null;
   const game = await getGameSummary(db, gameId);
   if (!game) return null;
+  // An explicit game the player's team is not in has no meaningful opponent.
+  if (game.home.id !== teamId && game.away.id !== teamId) return null;
   const oppTeamId = game.home.id === teamId ? game.away.id : game.home.id;
 
   // Game logs: this season and last, joined with the game for date/score and opp abbr.

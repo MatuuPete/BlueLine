@@ -1,6 +1,6 @@
 import { SavePresetInputSchema } from '@blueline/contracts';
 import { deletePreset, listPresets, savePreset } from '@blueline/db/queries/user';
-import { authed, json, notFound, parseBody } from '../../../lib/api';
+import { authed, json, notFound, parseBody, parseInput, uuidParser } from '../../../lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +15,7 @@ export const POST = authed(async ({ db, userId }, req: Request) => {
 
 /** DELETE /api/presets?id=<uuid>. Another user's preset and a missing one both answer 404. */
 export const DELETE = authed(async ({ db, userId }, req: Request) => {
-  const id = new URL(req.url).searchParams.get('id');
-  if (!id) return notFound();
-  return (await deletePreset(db, userId, id)) ? json({ ok: true }) : notFound();
+  const parsed = parseInput(uuidParser, new URL(req.url).searchParams.get('id'));
+  if ('res' in parsed) return parsed.res;
+  return (await deletePreset(db, userId, parsed.data)) ? json({ ok: true }) : notFound();
 });

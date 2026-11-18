@@ -38,6 +38,7 @@ beforeAll(async () => {
   await db.insert(teams).values([
     { id: 'bos', abbr: 'BOS', name: 'Boston Celtics' },
     { id: 'nyk', abbr: 'NYK', name: 'New York Knicks' },
+    { id: 'mia', abbr: 'MIA', name: 'Miami Heat' },
   ]);
   await db.insert(players).values([
     { id: 'p1', name: 'Jayson Tatum', teamId: 'bos', position: 'F' },
@@ -49,6 +50,7 @@ beforeAll(async () => {
     { id: 'g0', season: 2025, date: '2026-04-01', tipAt: t('2026-04-01'), homeTeamId: 'bos', awayTeamId: 'nyk', status: 'final', homeScore: 100, awayScore: 90 },
     { id: 'g1', season: 2026, date: '2026-11-10', tipAt: t('2026-11-10'), homeTeamId: 'bos', awayTeamId: 'nyk', status: 'final', homeScore: 100, awayScore: 110 },
     { id: 'g2', season: 2026, date: '2026-11-12', tipAt: t('2026-11-12'), homeTeamId: 'bos', awayTeamId: 'nyk', status: 'final', homeScore: 120, awayScore: 110 },
+    { id: 'gx', season: 2026, date: '2026-11-20', tipAt: t('2026-11-20'), homeTeamId: 'nyk', awayTeamId: 'mia' },
     { id: 'g3', season: 2026, date: '2026-11-18', tipAt: t('2026-11-18'), homeTeamId: 'bos', awayTeamId: 'nyk', spread: -6.5, total: 220 },
   ]);
   await db.insert(playerGameLogs).values([
@@ -103,6 +105,10 @@ describe('getPropDetail', () => {
   it('returns null for an unknown player or game', async () => {
     expect(await getPropDetail(db, { playerId: 'nope', market: 'PTS' })).toBeNull();
     expect(await getPropDetail(db, { playerId: 'p1', market: 'PTS', gameId: 'nope' })).toBeNull();
+  });
+
+  it('returns null for a game the player team is not in', async () => {
+    expect(await getPropDetail(db, { playerId: 'p1', market: 'PTS', gameId: 'gx' })).toBeNull();
   });
 
   it('defaults to the next unplayed game and fills the game summary', async () => {

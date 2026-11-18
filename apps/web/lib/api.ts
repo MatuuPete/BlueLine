@@ -4,7 +4,22 @@ import { getDb } from './db';
 import { getUserId } from './session';
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const;
-const MAX_BODY_CHARS = 64 * 1024;
+const MAX_BODY_BYTES = 64 * 1024;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Parser for a UUID string (ids of slips and presets). */
+export const uuidParser: Parser<string> = {
+  safeParse: (input) =>
+    typeof input === 'string' && UUID_RE.test(input)
+      ? { success: true, data: input }
+      : { success: false, error: { issues: [{ path: [], message: 'Invalid UUID' }] } },
+};
+
+/** True for a Postgres foreign-key violation (SQLSTATE 23503), however the driver wraps it. */
+export function isForeignKeyError(err: unknown): boolean {
+  const e = err as { code?: string; cause?: unknown };
+  return e?.code === '23503' || /foreign key/i.test(String(e?.cause ?? err));
+}
 
 export function json(data: unknown, status = 200): Response {
   return Response.json(data, { status, headers: NO_STORE });
@@ -56,8 +71,12 @@ export async function parseBody<T>(
   if (!(req.headers.get('content-type') ?? '').toLowerCase().startsWith('application/json')) {
     return { res: errorResponse(415, 'unsupported_media_type') };
   }
+  const declared = Number(req.headers.get('content-length'));
+  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
+    return { res: errorResponse(413, 'payload_too_large') };
+  }
   const text = await req.text();
-  if (text.length > MAX_BODY_CHARS) return { res: errorResponse(413, 'payload_too_large') };
+  if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) return { res: errorResponse(413, 'payload_too_large') };
   let body: unknown;
   try {
     body = JSON.parse(text);

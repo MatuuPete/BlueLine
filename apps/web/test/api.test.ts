@@ -133,6 +133,25 @@ describe('input validation', () => {
     expect(await res.json()).toHaveLength(1);
   });
 
+  it('favorites: unknown player is a 400, not a 500', async () => {
+    const res = await favorites.POST(post('/api/favorites', { playerId: 'ghost', market: 'PTS', side: 'over' }));
+    expect(res.status).toBe(400);
+    expect((await res.json()).fields).toHaveProperty('playerId');
+  });
+
+  it('bodies over 64KB are 413 (declared and actual bytes)', async () => {
+    const big = 'x'.repeat(70_000);
+    const res = await settings.PUT(post('/api/settings', { theme: big }, 'PUT'));
+    expect(res.status).toBe(413);
+    const multibyte = await settings.PUT(post('/api/settings', { theme: 'é'.repeat(40_000) }, 'PUT'));
+    expect(multibyte.status).toBe(413);
+  });
+
+  it('presets: malformed id is 400', async () => {
+    expect((await presets.DELETE(get('/api/presets?id=junk'))).status).toBe(400);
+    expect((await presets.DELETE(get('/api/presets'))).status).toBe(400);
+  });
+
   it('settings: defaults on GET, validated PUT', async () => {
     expect(await (await settings.GET()).json()).toMatchObject({ theme: 'system' });
     expect((await settings.PUT(post('/api/settings', { theme: 'neon' }, 'PUT'))).status).toBe(400);
