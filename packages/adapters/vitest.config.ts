@@ -5,5 +5,6 @@ export default defineProject({
     name: 'adapters',
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    setupFiles: ['test/setup.ts'],
   },
 });

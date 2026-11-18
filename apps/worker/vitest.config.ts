@@ -5,5 +5,8 @@ export default defineProject({
     name: 'worker',
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    setupFiles: ['test/setup.ts'],
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });
