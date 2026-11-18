@@ -6,8 +6,12 @@ const root = resolve('/repo');
 
 describe('resolveDatabaseUrl', () => {
   it('resolves relative pglite paths against the repo root', () => {
-    expect(resolveDatabaseUrl('pglite:.data/pglite', root)).toBe(`pglite:${resolve(root, '.data/pglite')}`);
-    expect(resolveDatabaseUrl('pglite:./.data/pglite', root)).toBe(`pglite:${resolve(root, '.data/pglite')}`);
+    expect(resolveDatabaseUrl('pglite:.data/pglite', root)).toBe(
+      `pglite:${resolve(root, '.data/pglite')}`,
+    );
+    expect(resolveDatabaseUrl('pglite:./.data/pglite', root)).toBe(
+      `pglite:${resolve(root, '.data/pglite')}`,
+    );
   });
 
   it('leaves absolute, in-memory and Postgres URLs alone', () => {

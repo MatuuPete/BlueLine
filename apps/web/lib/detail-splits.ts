@@ -32,9 +32,7 @@ export function applySplits(
   s: DetailSplit,
   ctx: SplitContext,
 ): GameLogEntry[] {
-  const mate = s.teammateId
-    ? ctx.teammates.find((t) => t.playerId === s.teammateId)
-    : undefined;
+  const mate = s.teammateId ? ctx.teammates.find((t) => t.playerId === s.teammateId) : undefined;
   const mateGames = mate ? new Set(mate.playedGameIds) : null;
 
   const out = logs.filter((l) => {

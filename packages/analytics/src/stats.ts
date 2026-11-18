@@ -49,5 +49,7 @@ export function median(xs: number[]): number | null {
   if (xs.length === 0) return null;
   const s = [...xs].sort((a, b) => a - b);
   const mid = s.length >> 1;
-  return s.length % 2 === 1 ? (s[mid] as number) : ((s[mid - 1] as number) + (s[mid] as number)) / 2;
+  return s.length % 2 === 1
+    ? (s[mid] as number)
+    : ((s[mid - 1] as number) + (s[mid] as number)) / 2;
 }

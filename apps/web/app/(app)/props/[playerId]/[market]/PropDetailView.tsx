@@ -133,7 +133,15 @@ export function PropDetailView({
   const [split, setSplit] = useState<DetailSplit>(DEFAULT_SPLIT);
   const slip = useSlip();
   const favs = useFavorites(favoriteKeys);
-  const ids = { mins: useId(), mate: useId(), log: useId(), shop: useId(), match: useId(), inj: useId(), move: useId() };
+  const ids = {
+    mins: useId(),
+    mate: useId(),
+    log: useId(),
+    shop: useId(),
+    match: useId(),
+    inj: useId(),
+    move: useId(),
+  };
 
   const season = useMemo(
     () => logs.reduce((s, l) => Math.max(s, l.season), 0) || Number(game.date.slice(0, 4)),
@@ -173,11 +181,19 @@ export function PropDetailView({
   const favorite = favs.has({ playerId: player.id, market, side });
 
   const dvp = matchup.find((m) => m.window === 'season') ?? matchup[0] ?? null;
-  const outMates = (board?.teammatesOut ?? []).filter((t) => t.status === 'out' || t.status === 'doubtful');
-  const keyOut = outMates.map((t) => teammates.find((m) => m.playerId === t.playerId)).find(Boolean);
+  const outMates = (board?.teammatesOut ?? []).filter(
+    (t) => t.status === 'out' || t.status === 'doubtful',
+  );
+  const keyOut = outMates
+    .map((t) => teammates.find((m) => m.playerId === t.playerId))
+    .find(Boolean);
   const withoutRate = keyOut
     ? hitRate(
-        applySplits(logs, { ...DEFAULT_SPLIT, window: 'all', teammateId: keyOut.playerId, teammateMode: 'without' }, ctx),
+        applySplits(
+          logs,
+          { ...DEFAULT_SPLIT, window: 'all', teammateId: keyOut.playerId, teammateMode: 'without' },
+          ctx,
+        ),
         market,
         line,
         side,
@@ -196,7 +212,13 @@ export function PropDetailView({
       : board.restDays === 0
         ? 'Back-to-back'
         : `${board.restDays} ${board.restDays === 1 ? 'day' : 'days'} rest`;
-  const meta = [player.teamAbbr, POSITION_NAMES[player.position], `${isHome ? 'vs' : '@'} ${opp.abbr}`, tipLabel, rest]
+  const meta = [
+    player.teamAbbr,
+    POSITION_NAMES[player.position],
+    `${isHome ? 'vs' : '@'} ${opp.abbr}`,
+    tipLabel,
+    rest,
+  ]
     .filter(Boolean)
     .join(' · ');
   const sideWord = side === 'over' ? 'Over' : 'Under';
@@ -228,7 +250,10 @@ export function PropDetailView({
       {label}
     </Chip>
   );
-  const softOn = split.oppTiers.length === 2 && split.oppTiers.includes('bad') && split.oppTiers.includes('worst');
+  const softOn =
+    split.oppTiers.length === 2 &&
+    split.oppTiers.includes('bad') &&
+    split.oppTiers.includes('worst');
   const splitCount = activeSplits(split);
 
   return (
@@ -359,12 +384,18 @@ export function PropDetailView({
           <div className={styles.splits}>
             <Group label="Window">
               {(['l5', 'l10', 'l20', 'all'] as const).map((w) =>
-                chip(w === 'all' ? 'All' : w.toUpperCase(), split.window === w, () => patch({ window: w })),
+                chip(w === 'all' ? 'All' : w.toUpperCase(), split.window === w, () =>
+                  patch({ window: w }),
+                ),
               )}
             </Group>
             <Group label="Venue">
               {(['all', 'home', 'away'] as const).map((v) =>
-                chip(v === 'all' ? 'All' : v === 'home' ? 'Home' : 'Away', split.homeAway === v, () => patch({ homeAway: v })),
+                chip(
+                  v === 'all' ? 'All' : v === 'home' ? 'Home' : 'Away',
+                  split.homeAway === v,
+                  () => patch({ homeAway: v }),
+                ),
               )}
             </Group>
             <Group label="Rest">
@@ -378,12 +409,18 @@ export function PropDetailView({
               ).map(([v, label]) => chip(label, split.rest === v, () => patch({ rest: v })))}
             </Group>
             <Group label="Context">
-              {chip(`vs ${opp.abbr}`, split.vsOpponent, () => patch({ vsOpponent: !split.vsOpponent }))}
+              {chip(`vs ${opp.abbr}`, split.vsOpponent, () =>
+                patch({ vsOpponent: !split.vsOpponent }),
+              )}
               {chip('30+ minutes', split.minMinutes === 30, () =>
                 patch({ minMinutes: split.minMinutes === 30 ? undefined : 30 }),
               )}
-              {chip('Soft defenses', softOn, () => patch({ oppTiers: softOn ? [] : ['bad', 'worst'] }))}
-              {chip('Wins', split.result === 'win', () => patch({ result: split.result === 'win' ? 'all' : 'win' }))}
+              {chip('Soft defenses', softOn, () =>
+                patch({ oppTiers: softOn ? [] : ['bad', 'worst'] }),
+              )}
+              {chip('Wins', split.result === 'win', () =>
+                patch({ result: split.result === 'win' ? 'all' : 'win' }),
+              )}
               {chip('Losses', split.result === 'loss', () =>
                 patch({ result: split.result === 'loss' ? 'all' : 'loss' }),
               )}
@@ -439,7 +476,9 @@ export function PropDetailView({
                       ['current', 'This season'],
                       ['last', 'Last season'],
                     ] as const
-                  ).map(([v, label]) => chip(label, split.season === v, () => patch({ season: v })))}
+                  ).map(([v, label]) =>
+                    chip(label, split.season === v, () => patch({ season: v })),
+                  )}
                 </Group>
                 <Group label="Opponent defense then">
                   {DVP_TIERS.map((t: DvpTier) =>
@@ -466,14 +505,22 @@ export function PropDetailView({
                     value={split.minMinutes ?? ''}
                     onChange={(e) => {
                       const v = e.target.value === '' ? undefined : Number(e.target.value);
-                      patch({ minMinutes: v === undefined || !Number.isFinite(v) ? undefined : Math.max(0, Math.min(60, v)) });
+                      patch({
+                        minMinutes:
+                          v === undefined || !Number.isFinite(v)
+                            ? undefined
+                            : Math.max(0, Math.min(60, v)),
+                      });
                     }}
                   />
                 </div>
               </div>
             </details>
             {splitCount > 0 ? (
-              <Button variant="ghost" onClick={() => setSplit({ ...DEFAULT_SPLIT, window: split.window })}>
+              <Button
+                variant="ghost"
+                onClick={() => setSplit({ ...DEFAULT_SPLIT, window: split.window })}
+              >
                 Clear splits ({splitCount})
               </Button>
             ) : null}
@@ -496,7 +543,8 @@ export function PropDetailView({
             </h2>
             {visibleShop.length === 0 ? (
               <p className={styles.muted}>
-                No sportsbook prices yet{books.length ? ' for your books' : ''}. Prices arrive with the next odds pull.
+                No sportsbook prices yet{books.length ? ' for your books' : ''}. Prices arrive with
+                the next odds pull.
               </p>
             ) : (
               <div role="table" aria-label="Prices by sportsbook" className={styles.shop}>
@@ -516,9 +564,15 @@ export function PropDetailView({
                       {price === null ? (
                         '—'
                       ) : (
-                        <span className={isBest && s === side && r.line === line ? styles.best : undefined}>
+                        <span
+                          className={
+                            isBest && s === side && r.line === line ? styles.best : undefined
+                          }
+                        >
                           {formatOdds(price, oddsFormat)}
-                          {isBest && s === side && r.line === line ? <span className="sr-only"> (best)</span> : null}
+                          {isBest && s === side && r.line === line ? (
+                            <span className="sr-only"> (best)</span>
+                          ) : null}
                         </span>
                       )}
                     </span>
@@ -553,10 +607,16 @@ export function PropDetailView({
             </h2>
             {dvp ? (
               <div className={styles.matchRow}>
-                <DefenseChip tier={dvp.tier} rank={dvp.rank} position={player.position} side={side} />
+                <DefenseChip
+                  tier={dvp.tier}
+                  rank={dvp.rank}
+                  position={player.position}
+                  side={side}
+                />
                 <p className={styles.matchText}>
                   {opp.name} allow {dvp.allowedPerGame.toFixed(1)} {STAT_WORDS[market]} per game to{' '}
-                  {POSITION_NAMES[player.position].toLowerCase()}s, {ordinal(dvp.rank)} of 30 (1st = toughest).
+                  {POSITION_NAMES[player.position].toLowerCase()}s, {ordinal(dvp.rank)} of 30 (1st =
+                  toughest).
                 </p>
               </div>
             ) : (
@@ -565,7 +625,9 @@ export function PropDetailView({
             <div className={styles.facts}>
               <div className={styles.fact}>
                 <span className={styles.factLabel}>Game total</span>
-                <span className={styles.factValue}>{game.total === null ? '—' : game.total.toFixed(1)}</span>
+                <span className={styles.factValue}>
+                  {game.total === null ? '—' : game.total.toFixed(1)}
+                </span>
               </div>
               <div className={styles.fact}>
                 <span className={styles.factLabel}>Spread</span>
@@ -612,8 +674,9 @@ export function PropDetailView({
             )}
             {keyOut && withoutRate && withoutRate.n > 0 ? (
               <p className={styles.muted}>
-                Without {shortName(keyOut.name)}, {shortName(player.name)} cleared {sideWord.toLowerCase()}{' '}
-                {formatLine(line)} in {withoutRate.hits} of {withoutRate.n} games.
+                Without {shortName(keyOut.name)}, {shortName(player.name)} cleared{' '}
+                {sideWord.toLowerCase()} {formatLine(line)} in {withoutRate.hits} of {withoutRate.n}{' '}
+                games.
               </p>
             ) : null}
           </section>
@@ -634,8 +697,7 @@ export function PropDetailView({
                     return (
                       <li key={`${m.book}:${m.capturedAt}:${i}`} className={styles.move}>
                         <span className={styles.muted}>
-                          {dateTimeET(m.capturedAt)} ·{' '}
-                          {BOOK_SHORT[m.book]}
+                          {dateTimeET(m.capturedAt)} · {BOOK_SHORT[m.book]}
                         </span>
                         <span className={styles.mono}>{formatLine(m.line)}</span>
                         <span className={`${styles.mono} ${styles.muted}`}>
@@ -651,8 +713,8 @@ export function PropDetailView({
       </div>
 
       <p className={styles.note}>
-        Hit rates leave out games the player did not play; a push is not counted. Splits and the
-        alt line recompute everything here from {logs.length} logged games this season and last.
+        Hit rates leave out games the player did not play; a push is not counted. Splits and the alt
+        line recompute everything here from {logs.length} logged games this season and last.
       </p>
     </div>
   );

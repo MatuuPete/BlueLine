@@ -77,7 +77,9 @@ export function BoardView({
 
   // R31: today's date stays out of the URL so shared links always mean "today".
   const setFilter = (next: BoardFilter) =>
-    startTransition(() => setUrlFilter({ ...next, date: next.date === today ? undefined : next.date }));
+    startTransition(() =>
+      setUrlFilter({ ...next, date: next.date === today ? undefined : next.date }),
+    );
   const filter: BoardFilter = { ...urlFilter, date };
 
   const gameOptions = games.map((g) => ({ id: g.id, label: `${g.away.abbr} @ ${g.home.abbr}` }));
@@ -88,16 +90,26 @@ export function BoardView({
   const filtered = activeFilterCount(filter) > 0;
 
   const countText =
-    total === 0 ? 'No props' : `${total} ${total === 1 ? 'prop' : 'props'}${filtered ? ' match' : ''}`;
+    total === 0
+      ? 'No props'
+      : `${total} ${total === 1 ? 'prop' : 'props'}${filtered ? ' match' : ''}`;
   const subtitle = `${slateLabel(date)} · ${games.length} ${games.length === 1 ? 'game' : 'games'} · ${countText}`;
 
   const empty =
     games.length === 0 ? (
       <EmptyState
         title="No games on this date"
-        hint={date === today ? 'Switch to tomorrow or open the games list.' : 'Switch back to today or open the games list.'}
+        hint={
+          date === today
+            ? 'Switch to tomorrow or open the games list.'
+            : 'Switch back to today or open the games list.'
+        }
         action={
-          <Button onClick={() => setFilter({ ...filter, date: date === today ? tomorrow : today, games: [], page: 1 })}>
+          <Button
+            onClick={() =>
+              setFilter({ ...filter, date: date === today ? tomorrow : today, games: [], page: 1 })
+            }
+          >
             {date === today ? 'Show tomorrow' : 'Show today'}
           </Button>
         }
@@ -175,7 +187,12 @@ export function BoardView({
                   { value: 'tomorrow', label: 'Tomorrow' },
                 ]}
                 onChange={(v) =>
-                  setFilter({ ...filter, date: v === 'tomorrow' ? tomorrow : today, games: [], page: 1 })
+                  setFilter({
+                    ...filter,
+                    date: v === 'tomorrow' ? tomorrow : today,
+                    games: [],
+                    page: 1,
+                  })
                 }
               />
               <div className={styles.sortBox}>
@@ -186,7 +203,9 @@ export function BoardView({
                   id={sortId}
                   className={styles.select}
                   value={filter.sort}
-                  onChange={(e) => setFilter({ ...filter, sort: e.target.value as BoardSort, page: 1 })}
+                  onChange={(e) =>
+                    setFilter({ ...filter, sort: e.target.value as BoardSort, page: 1 })
+                  }
                 >
                   {BOARD_SORTS.map((s) => (
                     <option key={s} value={s}>
@@ -199,7 +218,11 @@ export function BoardView({
           </div>
 
           <div className={styles.quick}>
-            <QuickFilters value={filter} onChange={setFilter} onOpenFilters={() => setSheetOpen(true)} />
+            <QuickFilters
+              value={filter}
+              onChange={setFilter}
+              onOpenFilters={() => setSheetOpen(true)}
+            />
           </div>
 
           {favs.error ? (
@@ -208,7 +231,11 @@ export function BoardView({
             </p>
           ) : null}
 
-          <div className={styles.results} aria-busy={pending} data-pending={pending ? 'true' : undefined}>
+          <div
+            className={styles.results}
+            aria-busy={pending}
+            data-pending={pending ? 'true' : undefined}
+          >
             <BoardRows
               rows={rows}
               activeWindow={filter.window}
@@ -242,8 +269,8 @@ export function BoardView({
           ) : null}
 
           <p className={styles.note}>
-            Hit rates leave out games the player did not play. A push on a whole-number line is
-            not counted.
+            Hit rates leave out games the player did not play. A push on a whole-number line is not
+            counted.
           </p>
         </section>
         <div className={styles.railCol}>
@@ -270,7 +297,11 @@ export function BoardView({
           setPresetOpen(true);
         }}
       />
-      <PresetDialog open={presetOpen} onClose={() => setPresetOpen(false)} filter={presetPatch(filter)} />
+      <PresetDialog
+        open={presetOpen}
+        onClose={() => setPresetOpen(false)}
+        filter={presetPatch(filter)}
+      />
     </div>
   );
 }

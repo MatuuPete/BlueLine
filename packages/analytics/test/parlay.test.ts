@@ -20,16 +20,45 @@ describe('parlay', () => {
 describe('jointHitRate', () => {
   it('uses only gameIds present in every leg', () => {
     const r = jointHitRate([
-      { values: new Map([['g1', 30], ['g2', 10], ['g3', 28]]), line: 24.5, side: 'over' },
-      { values: new Map([['g1', 9], ['g3', 5]]), line: 7.5, side: 'over' },
+      {
+        values: new Map([
+          ['g1', 30],
+          ['g2', 10],
+          ['g3', 28],
+        ]),
+        line: 24.5,
+        side: 'over',
+      },
+      {
+        values: new Map([
+          ['g1', 9],
+          ['g3', 5],
+        ]),
+        line: 7.5,
+        side: 'over',
+      },
     ]);
     // shared: g1 (hit, hit), g3 (hit, miss)
     expect(r).toEqual({ hits: 1, n: 2, rate: 0.5 });
   });
   it('a push on any leg drops the game', () => {
     const r = jointHitRate([
-      { values: new Map([['g1', 25], ['g2', 30]]), line: 25, side: 'over' },
-      { values: new Map([['g1', 9], ['g2', 9]]), line: 7.5, side: 'over' },
+      {
+        values: new Map([
+          ['g1', 25],
+          ['g2', 30],
+        ]),
+        line: 25,
+        side: 'over',
+      },
+      {
+        values: new Map([
+          ['g1', 9],
+          ['g2', 9],
+        ]),
+        line: 7.5,
+        side: 'over',
+      },
     ]);
     expect(r).toEqual({ hits: 1, n: 1, rate: 1 });
   });

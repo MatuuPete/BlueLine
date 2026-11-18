@@ -11,7 +11,10 @@ test('board loads; "L10 Locks" changes the count and the URL; reload keeps the f
   const url0 = new URL(page.url());
   expect(url0.search).toBe('');
 
-  await page.getByRole('group', { name: 'Presets' }).getByRole('button', { name: 'L10 Locks' }).click();
+  await page
+    .getByRole('group', { name: 'Presets' })
+    .getByRole('button', { name: 'L10 Locks' })
+    .click();
   await expect.poll(() => new URL(page.url()).search).not.toBe('');
   await expect.poll(() => boardSubtitle(page)).not.toBe(before);
   const after = await boardSubtitle(page);

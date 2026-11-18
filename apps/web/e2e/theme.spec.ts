@@ -8,7 +8,9 @@ test('theme toggle persists across reload (cookie and data-theme)', async ({ pag
   const next = start === 'dark' ? 'light' : 'dark';
 
   await page
-    .getByRole('button', { name: start === 'dark' ? 'Switch to light mode' : 'Switch to dark mode' })
+    .getByRole('button', {
+      name: start === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
+    })
     .first()
     .click();
   await expect(html).toHaveAttribute('data-theme', next);

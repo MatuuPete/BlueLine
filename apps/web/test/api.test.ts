@@ -79,7 +79,9 @@ describe('auth', () => {
       settings.GET(),
       status.GET(),
       gamesRoute.GET(get('/api/games')),
-      detail.GET(get('/api/props/p1/PTS'), { params: Promise.resolve({ playerId: 'p1', market: 'PTS' }) }),
+      detail.GET(get('/api/props/p1/PTS'), {
+        params: Promise.resolve({ playerId: 'p1', market: 'PTS' }),
+      }),
     ];
     for (const res of await Promise.all(calls)) expect(res.status).toBe(401);
   });
@@ -135,7 +137,9 @@ describe('input validation', () => {
   });
 
   it('favorites: unknown player is a 400, not a 500', async () => {
-    const res = await favorites.POST(post('/api/favorites', { playerId: 'ghost', market: 'PTS', side: 'over' }));
+    const res = await favorites.POST(
+      post('/api/favorites', { playerId: 'ghost', market: 'PTS', side: 'over' }),
+    );
     expect(res.status).toBe(400);
     expect((await res.json()).fields).toHaveProperty('playerId');
   });
@@ -144,7 +148,9 @@ describe('input validation', () => {
     const big = 'x'.repeat(70_000);
     const res = await settings.PUT(post('/api/settings', { theme: big }, 'PUT'));
     expect(res.status).toBe(413);
-    const multibyte = await settings.PUT(post('/api/settings', { theme: 'é'.repeat(40_000) }, 'PUT'));
+    const multibyte = await settings.PUT(
+      post('/api/settings', { theme: 'é'.repeat(40_000) }, 'PUT'),
+    );
     expect(multibyte.status).toBe(413);
   });
 
@@ -188,19 +194,27 @@ describe('IDOR: user B cannot see or change user A data', () => {
   });
 
   it('preset delete answers 404 for the other user; favorites are per user', async () => {
-    const saved = await presets.POST(post('/api/presets', { name: 'Hot', filter: { minHitRate: 70 } }));
+    const saved = await presets.POST(
+      post('/api/presets', { name: 'Hot', filter: { minHitRate: 70 } }),
+    );
     expect(saved.status).toBe(201);
     const { id } = await saved.json();
     await favorites.POST(post('/api/favorites', { playerId: 'p1', market: 'PTS', side: 'over' }));
 
     currentUser = 'userB';
-    expect((await presets.DELETE(new Request(`http://t/api/presets?id=${id}`, { method: 'DELETE' }))).status).toBe(404);
+    expect(
+      (await presets.DELETE(new Request(`http://t/api/presets?id=${id}`, { method: 'DELETE' })))
+        .status,
+    ).toBe(404);
     expect(await (await presets.GET()).json()).toEqual([]);
     expect(await (await favorites.GET()).json()).toEqual([]);
 
     currentUser = 'userA';
     expect(await (await presets.GET()).json()).toHaveLength(1);
-    expect((await presets.DELETE(new Request(`http://t/api/presets?id=${id}`, { method: 'DELETE' }))).status).toBe(200);
+    expect(
+      (await presets.DELETE(new Request(`http://t/api/presets?id=${id}`, { method: 'DELETE' })))
+        .status,
+    ).toBe(200);
   });
 });
 
@@ -212,8 +226,14 @@ describe('foreignKeyFields', () => {
   });
 
   it('names the failing column from the constraint', () => {
-    expect(foreignKeyFields({ cause: { code: '23503', constraint: 'favorites_player_id_players_id_fk' } })).toEqual({ playerId: ['unknown player'] });
-    expect(foreignKeyFields({ cause: { code: '23503', constraint: 'slip_legs_game_id_games_id_fk' } })).toEqual({ gameId: ['unknown game'] });
+    expect(
+      foreignKeyFields({
+        cause: { code: '23503', constraint: 'favorites_player_id_players_id_fk' },
+      }),
+    ).toEqual({ playerId: ['unknown player'] });
+    expect(
+      foreignKeyFields({ cause: { code: '23503', constraint: 'slip_legs_game_id_games_id_fk' } }),
+    ).toEqual({ gameId: ['unknown game'] });
   });
 
   it('returns null for other errors', () => {

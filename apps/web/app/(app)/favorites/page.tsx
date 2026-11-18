@@ -32,7 +32,10 @@ export default async function FavoritesPage() {
           .from(propMetrics)
           .innerJoin(games, eq(games.id, propMetrics.gameId))
           .where(and(eq(games.date, today), inArray(propMetrics.playerId, ids))),
-        db.select({ id: players.id, name: players.name }).from(players).where(inArray(players.id, ids)),
+        db
+          .select({ id: players.id, name: players.name })
+          .from(players)
+          .where(inArray(players.id, ids)),
       ])
     : [[], []];
 

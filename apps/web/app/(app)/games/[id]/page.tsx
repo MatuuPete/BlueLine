@@ -27,7 +27,11 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   const game = await getGameSummary(db, id);
   if (!game) notFound();
   const [board, favorites] = await Promise.all([
-    queryBoard(db, { ...DEFAULT_BOARD_FILTER, date: game.date, games: [game.id] }, { pageSize: 200 }),
+    queryBoard(
+      db,
+      { ...DEFAULT_BOARD_FILTER, date: game.date, games: [game.id] },
+      { pageSize: 200 },
+    ),
     listFavorites(db, userId),
   ]);
   const line = gameLine(game);
@@ -75,7 +79,8 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
       />
       {board.total > board.rows.length ? (
         <p className={styles.muted}>
-          Showing {board.rows.length} of {board.total}. Filter the board to this game to see the rest.
+          Showing {board.rows.length} of {board.total}. Filter the board to this game to see the
+          rest.
         </p>
       ) : null}
     </div>

@@ -43,9 +43,7 @@ export default async function PropDetailPage({
 
   const sideParam = one(search.side);
   const side: Side =
-    sideParam === 'under' || sideParam === 'over'
-      ? sideParam
-      : (detail.metrics[0]?.side ?? 'over');
+    sideParam === 'under' || sideParam === 'over' ? sideParam : (detail.metrics[0]?.side ?? 'over');
 
   return (
     <PropDetailView

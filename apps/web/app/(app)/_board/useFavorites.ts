@@ -39,5 +39,9 @@ export function useFavorites(initial: readonly string[]) {
     }
   }, []);
 
-  return { has: (p: { playerId: string; market: Market; side: Side }) => keys.has(favKey(p)), toggle, error };
+  return {
+    has: (p: { playerId: string; market: Market; side: Side }) => keys.has(favKey(p)),
+    toggle,
+    error,
+  };
 }

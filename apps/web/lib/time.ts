@@ -64,7 +64,11 @@ function ymdToDate(ymd: string): Date | null {
   return validYmd(ymd) ? new Date(`${ymd}T12:00:00Z`) : null;
 }
 
-const shortFmt = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' });
+const shortFmt = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'UTC',
+  month: 'short',
+  day: 'numeric',
+});
 const longFmt = new Intl.DateTimeFormat('en-US', {
   timeZone: 'UTC',
   weekday: 'long',

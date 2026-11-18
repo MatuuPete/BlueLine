@@ -6,12 +6,7 @@ const nextConfig: NextConfig = {
   agentRules: false,
   poweredByHeader: false,
   // Workspace packages ship TypeScript source; Next compiles them.
-  transpilePackages: [
-    '@blueline/contracts',
-    '@blueline/db',
-    '@blueline/analytics',
-    '@blueline/ui',
-  ],
+  transpilePackages: ['@blueline/contracts', '@blueline/db', '@blueline/analytics', '@blueline/ui'],
   // PGlite loads its WASM/data files at runtime; keep it out of the server bundle.
   serverExternalPackages: ['@electric-sql/pglite'],
   // Static security headers on every response (spec §8). The CSP is per request (it carries

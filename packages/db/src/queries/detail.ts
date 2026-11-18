@@ -171,10 +171,7 @@ export async function getPropDetail(db: Db, q: PropDetailQuery): Promise<PropDet
     .innerJoin(games, eq(games.id, playerGameLogs.gameId))
     .innerJoin(teams, eq(teams.id, playerGameLogs.oppTeamId))
     .where(
-      and(
-        eq(playerGameLogs.playerId, q.playerId),
-        inArray(games.season, [season, season - 1]),
-      ),
+      and(eq(playerGameLogs.playerId, q.playerId), inArray(games.season, [season, season - 1])),
     )
     .orderBy(asc(games.tipAt), asc(games.id));
 
@@ -189,10 +186,15 @@ export async function getPropDetail(db: Db, q: PropDetailQuery): Promise<PropDet
   let prevTip: number | null = null;
   const logs: GameLogEntry[] = logRows.map(({ l, g, oppAbbr }) => {
     const tip = g.tipAt.getTime();
-    const restDays = prevTip === null ? null : Math.max(0, Math.round((tip - prevTip) / DAY_MS) - 1);
+    const restDays =
+      prevTip === null ? null : Math.max(0, Math.round((tip - prevTip) / DAY_MS) - 1);
     prevTip = tip;
     const final = g.status === 'final' && g.homeScore !== null && g.awayScore !== null;
-    const won = final ? (l.isHome ? g.homeScore! > g.awayScore! : g.awayScore! > g.homeScore!) : null;
+    const won = final
+      ? l.isHome
+        ? g.homeScore! > g.awayScore!
+        : g.awayScore! > g.homeScore!
+      : null;
     return {
       gameId: l.gameId,
       date: g.date,
@@ -279,8 +281,10 @@ export async function getPropDetail(db: Db, q: PropDetailQuery): Promise<PropDet
   const bestOver = new Map<number, number>();
   const bestUnder = new Map<number, number>();
   for (const c of current) {
-    if (c.overPrice !== null) bestOver.set(c.line, Math.max(bestOver.get(c.line) ?? -Infinity, c.overPrice));
-    if (c.underPrice !== null) bestUnder.set(c.line, Math.max(bestUnder.get(c.line) ?? -Infinity, c.underPrice));
+    if (c.overPrice !== null)
+      bestOver.set(c.line, Math.max(bestOver.get(c.line) ?? -Infinity, c.overPrice));
+    if (c.underPrice !== null)
+      bestUnder.set(c.line, Math.max(bestUnder.get(c.line) ?? -Infinity, c.underPrice));
   }
   const shop: ShopRow[] = current.map((c) => {
     const [nvo, nvu] = noVig(c.overPrice, c.underPrice);

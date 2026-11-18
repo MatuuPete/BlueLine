@@ -9,9 +9,9 @@ test('detail: the "Without" teammate split changes the hit tiles', async ({ page
   const before = await tiles.innerText();
 
   const mate = page.getByLabel('Teammate', { exact: true });
-  const options = await mate.locator('option').evaluateAll((os) =>
-    (os as HTMLOptionElement[]).filter((o) => o.value).map((o) => o.value),
-  );
+  const options = await mate
+    .locator('option')
+    .evaluateAll((os) => (os as HTMLOptionElement[]).filter((o) => o.value).map((o) => o.value));
   expect(options.length).toBeGreaterThan(0);
 
   // Pick teammates until "without" changes the tiles (some may not have missed games).

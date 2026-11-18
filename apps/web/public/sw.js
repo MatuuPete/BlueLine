@@ -70,7 +70,9 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(url.pathname === '/' ? boardNetworkFirst(request) : pageNetworkFirst(request));
+    event.respondWith(
+      url.pathname === '/' ? boardNetworkFirst(request) : pageNetworkFirst(request),
+    );
     return;
   }
   if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/')) {

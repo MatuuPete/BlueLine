@@ -20,7 +20,8 @@ for (const path of ['/signin', '/welcome', '/offline']) {
       els.map((s) => ({ src: s.getAttribute('src'), nonce: s.nonce || s.getAttribute('nonce') })),
     );
     expect(scripts.length).toBeGreaterThan(0);
-    for (const s of scripts) expect(s.nonce, `script ${s.src ?? '(inline)'} has a nonce`).toBe(nonce);
+    for (const s of scripts)
+      expect(s.nonce, `script ${s.src ?? '(inline)'} has a nonce`).toBe(nonce);
 
     await page.waitForLoadState('networkidle');
     expect(problems).toEqual([]);

@@ -6,7 +6,11 @@ const TEN = [27, 22, 31, 26, 29, 19, 28, 33, 25, 30];
 
 describe('hitRate', () => {
   it('over 24.5', () => {
-    expect(hitRate(ptsLines(TEN), 'PTS', 24.5, 'over')).toMatchObject({ hits: 8, n: 10, rate: 0.8 });
+    expect(hitRate(ptsLines(TEN), 'PTS', 24.5, 'over')).toMatchObject({
+      hits: 8,
+      n: 10,
+      rate: 0.8,
+    });
   });
   it('over 25 with a push', () => {
     expect(hitRate(ptsLines([25, 26, 24]), 'PTS', 25, 'over')).toEqual({
@@ -28,7 +32,11 @@ describe('hitRate', () => {
     expect(hitRate([], 'PTS', 24.5, 'over')).toMatchObject({ rate: null, n: 0 });
   });
   it('all pushes gives null rate', () => {
-    expect(hitRate(ptsLines([25]), 'PTS', 25, 'over')).toMatchObject({ n: 0, pushes: 1, rate: null });
+    expect(hitRate(ptsLines([25]), 'PTS', 25, 'over')).toMatchObject({
+      n: 0,
+      pushes: 1,
+      rate: null,
+    });
   });
 });
 

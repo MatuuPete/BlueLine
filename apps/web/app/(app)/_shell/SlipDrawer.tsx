@@ -122,7 +122,10 @@ export function SlipDrawer() {
     const first = nodes[0];
     const last = nodes[nodes.length - 1];
     if (!first || !last) return;
-    if (e.shiftKey && (document.activeElement === first || document.activeElement === ref.current)) {
+    if (
+      e.shiftKey &&
+      (document.activeElement === first || document.activeElement === ref.current)
+    ) {
       e.preventDefault();
       last.focus();
     } else if (!e.shiftKey && document.activeElement === last) {
@@ -171,7 +174,12 @@ export function SlipDrawer() {
               <h2 id={titleId} className={styles.title}>
                 Slip
               </h2>
-              <button type="button" className={styles.close} onClick={close} aria-label="Close slip">
+              <button
+                type="button"
+                className={styles.close}
+                onClick={close}
+                aria-label="Close slip"
+              >
                 <CloseIcon />
               </button>
             </header>

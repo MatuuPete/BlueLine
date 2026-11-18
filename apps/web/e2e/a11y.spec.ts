@@ -11,7 +11,9 @@ const THEMES = ['light', 'dark'] as const;
 async function scan(page: Page) {
   // Dev mode can reload once after first compile; scan only once the page is quiet.
   await page.waitForLoadState('networkidle');
-  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
   return results.violations
     .filter((v) => v.impact === 'serious' || v.impact === 'critical')
     .map((v) => ({

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { americanToDecimal, bestPrice, consensusNoVig, devigTwoWay, impliedProb } from '../src/odds';
+import {
+  americanToDecimal,
+  bestPrice,
+  consensusNoVig,
+  devigTwoWay,
+  impliedProb,
+} from '../src/odds';
 
 describe('conversions', () => {
   it('americanToDecimal', () => {

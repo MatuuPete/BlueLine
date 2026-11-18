@@ -96,7 +96,8 @@ export async function parseBody<T>(
     return { res: errorResponse(413, 'payload_too_large') };
   }
   const text = await req.text();
-  if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) return { res: errorResponse(413, 'payload_too_large') };
+  if (new TextEncoder().encode(text).length > MAX_BODY_BYTES)
+    return { res: errorResponse(413, 'payload_too_large') };
   let body: unknown;
   try {
     body = JSON.parse(text);

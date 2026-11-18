@@ -60,7 +60,14 @@ export function SlipProvider({ children }: { children: ReactNode }) {
     (leg: SlipLeg) => {
       const next = toggleLeg(legs, leg);
       if (next.length < legs.length) setNotice(`Removed ${leg.playerName} from the slip.`);
-      else if (next.length === legs.length && !legs.some((l) => l.key === leg.key || (l.gameId === leg.gameId && l.playerId === leg.playerId && l.market === leg.market)))
+      else if (
+        next.length === legs.length &&
+        !legs.some(
+          (l) =>
+            l.key === leg.key ||
+            (l.gameId === leg.gameId && l.playerId === leg.playerId && l.market === leg.market),
+        )
+      )
         setNotice(`Slip is full: ${MAX_LEGS} legs at most.`);
       else setNotice(`Added ${leg.playerName} to the slip.`);
       setLegs(next);

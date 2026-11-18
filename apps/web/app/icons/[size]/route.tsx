@@ -31,14 +31,14 @@ export async function GET(_req: Request, ctx: { params: Promise<{ size: string }
     />
   );
   return new ImageResponse(
-    (
-      <div style={{ width: size, height: size, display: 'flex', position: 'relative', background: TILE }}>
-        {rect(6, 6, 3, 8, BAR)}
-        {rect(12.5, 14, 3, 6, BAR2)}
-        {rect(19, 8, 3, 6, BAR)}
-        {rect(4, 13.5, 20, 1.2, BAR)}
-      </div>
-    ),
+    <div
+      style={{ width: size, height: size, display: 'flex', position: 'relative', background: TILE }}
+    >
+      {rect(6, 6, 3, 8, BAR)}
+      {rect(12.5, 14, 3, 6, BAR2)}
+      {rect(19, 8, 3, 6, BAR)}
+      {rect(4, 13.5, 20, 1.2, BAR)}
+    </div>,
     { width: size, height: size },
   );
 }

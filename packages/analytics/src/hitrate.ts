@@ -48,7 +48,8 @@ export function selectWindow(logs: LogLine[], w: Window, ctx: WindowCtx): LogLin
       return played.filter((l) => l.season === ctx.season);
     case 'h2h':
       return played.filter(
-        (l) => l.oppTeamId === ctx.oppTeamId && (l.season === ctx.season || l.season === ctx.season - 1),
+        (l) =>
+          l.oppTeamId === ctx.oppTeamId && (l.season === ctx.season || l.season === ctx.season - 1),
       );
     case 'lastSeason':
       return played.filter((l) => l.season === ctx.season - 1);

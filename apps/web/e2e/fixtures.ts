@@ -4,7 +4,9 @@ import { test as base, expect, type Page } from '@playwright/test';
 export const test = base.extend<{ seenIntro: void }>({
   seenIntro: [
     async ({ context, baseURL }, use) => {
-      await context.addCookies([{ name: 'seen_intro', value: '1', url: baseURL ?? 'http://localhost:3100' }]);
+      await context.addCookies([
+        { name: 'seen_intro', value: '1', url: baseURL ?? 'http://localhost:3100' },
+      ]);
       await use();
     },
     { auto: true },

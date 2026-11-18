@@ -128,7 +128,12 @@ describe('settings', () => {
       books: [],
       skipIntro: false,
     });
-    const next = { theme: 'dark' as const, oddsFormat: 'decimal' as const, books: ['fanduel' as const], skipIntro: true };
+    const next = {
+      theme: 'dark' as const,
+      oddsFormat: 'decimal' as const,
+      books: ['fanduel' as const],
+      skipIntro: true,
+    };
     expect(await saveSettings(db, 'userA', next)).toEqual(next);
     expect((await getSettings(db, 'userA')).theme).toBe('dark');
     expect((await getSettings(db, 'userB')).theme).toBe('system');

@@ -17,8 +17,8 @@ export default async function SlipsPage() {
         <div className={styles.titleBlock}>
           <h1 className={styles.h1}>Slips</h1>
           <p className={styles.sub}>
-            {slips.length} saved {slips.length === 1 ? 'slip' : 'slips'} · legs are graded after
-            the box scores land
+            {slips.length} saved {slips.length === 1 ? 'slip' : 'slips'} · legs are graded after the
+            box scores land
           </p>
         </div>
       </div>

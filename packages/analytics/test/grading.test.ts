@@ -14,9 +14,9 @@ describe('gradeLeg', () => {
     expect(gradeLeg(leg, line({ pts: 25 }), 'final')).toBe('push');
   });
   it('combo market uses summed stats', () => {
-    expect(gradeLeg({ ...leg, market: 'PRA', line: 30.5 }, line({ pts: 20, reb: 6, ast: 5 }), 'final')).toBe(
-      'hit',
-    );
+    expect(
+      gradeLeg({ ...leg, market: 'PRA', line: 30.5 }, line({ pts: 20, reb: 6, ast: 5 }), 'final'),
+    ).toBe('hit');
   });
   it('void for a DNP, 0 minutes, or missing box on a final game', () => {
     expect(gradeLeg(leg, dnp(), 'final')).toBe('void');

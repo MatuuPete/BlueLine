@@ -79,10 +79,7 @@ export async function toggleFavorite(
 
 // --- slips -----------------------------------------------------------------
 
-async function loadSlips(
-  db: Db,
-  rows: InferSelectModel<typeof slips>[],
-): Promise<SlipDTO[]> {
+async function loadSlips(db: Db, rows: InferSelectModel<typeof slips>[]): Promise<SlipDTO[]> {
   if (rows.length === 0) return [];
   const legs = await db
     .select({ leg: slipLegs, playerName: players.name })
@@ -213,11 +210,7 @@ export async function getSettings(db: Db, userId: string): Promise<UserSettings>
   return { theme: r.theme, oddsFormat: r.oddsFormat, books: r.books, skipIntro: r.skipIntro };
 }
 
-export async function saveSettings(
-  db: Db,
-  userId: string,
-  s: UserSettings,
-): Promise<UserSettings> {
+export async function saveSettings(db: Db, userId: string, s: UserSettings): Promise<UserSettings> {
   const values = {
     theme: s.theme,
     oddsFormat: s.oddsFormat,

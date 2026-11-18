@@ -12,9 +12,11 @@ export function parlay(legs: { price: number }[]): { decimal: number; american: 
  * Share of games (present in every leg) where all legs hit. A game where any leg
  * pushes is excluded from n, like a push on a single leg.
  */
-export function jointHitRate(
-  legs: { values: Map<string, number>; line: number; side: Side }[],
-): { hits: number; n: number; rate: number | null } {
+export function jointHitRate(legs: { values: Map<string, number>; line: number; side: Side }[]): {
+  hits: number;
+  n: number;
+  rate: number | null;
+} {
   const first = legs[0];
   if (!first) return { hits: 0, n: 0, rate: null };
   let hits = 0;

@@ -65,7 +65,10 @@ export default async function GamesPage({
         <ul className={styles.grid}>
           {games.map((g) => (
             <li key={g.id}>
-              <Link href={`/games/${encodeURIComponent(g.id)}`} className={`${styles.card} ${styles.linkCard}`}>
+              <Link
+                href={`/games/${encodeURIComponent(g.id)}`}
+                className={`${styles.card} ${styles.linkCard}`}
+              >
                 <span className={`${styles.row} ${styles.spread}`}>
                   <span className={styles.matchup}>
                     {g.away.abbr} @ {g.home.abbr}
