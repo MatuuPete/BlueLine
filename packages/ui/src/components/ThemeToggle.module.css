@@ -1,0 +1,47 @@
+/* Canvas: Main.dc.html top-bar control (.bl-ctrl) and Intro.dc.html round control. */
+.toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.toggle:active {
+  transform: translateY(1px);
+}
+
+.chrome {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-input, 10px);
+  border: 1px solid var(--chromeInputBd);
+  color: var(--onChrome);
+}
+
+/* 44px touch target around the 40px control. */
+.chrome::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+}
+
+.chrome:hover {
+  background: var(--chromeHover);
+}
+
+.intro {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--intro-ctrlBd);
+  color: var(--intro-ctrlFg);
+}
+
+.intro:hover {
+  border-color: var(--intro-stroke);
+}

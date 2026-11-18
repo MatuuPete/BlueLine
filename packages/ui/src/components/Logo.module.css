@@ -1,0 +1,32 @@
+/* Canvas: the 28px mark in every artboard's header. */
+.mark {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.tile {
+  fill: var(--logo-tile);
+  stroke: var(--logo-edge);
+}
+
+.bar {
+  fill: var(--logo-bar);
+}
+
+.bar2 {
+  fill: var(--logo-bar2);
+}
+
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.word {
+  font-family: var(--font-display, 'Big Shoulders'), 'Arial Narrow', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}

@@ -1,0 +1,53 @@
+/* Canvas: .bl-chip (Main.dc.html markets, presets, books, tiers). */
+.chip {
+  position: relative;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--inputbd);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* 44px touch target around the 36px chip. */
+.chip::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--target, 44px);
+  transform: translateY(-50%);
+}
+
+.chip:hover {
+  border-color: var(--brandText);
+}
+
+.chip:active {
+  transform: translateY(1px);
+}
+
+.pill {
+  border-radius: var(--radius-pill, 999px);
+}
+
+.rounded {
+  border-radius: var(--radius-input, 10px);
+}
+
+.mono {
+  font-family: var(--font-mono, 'IBM Plex Mono'), ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--onBrand);
+}

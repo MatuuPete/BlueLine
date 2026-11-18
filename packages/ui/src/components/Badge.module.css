@@ -1,0 +1,32 @@
+/* Canvas: DesignSystem.dc.html Out / Questionable / FD badges. */
+.badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-badge, 6px);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+.out {
+  background: var(--dangerBg);
+  border-color: var(--dangerBd);
+  color: var(--dangerFg);
+}
+
+.questionable {
+  background: var(--toughBg);
+  border-color: var(--toughBd);
+  color: var(--toughFg);
+}
+
+.book {
+  padding: 2px 6px;
+  border: 0;
+  background: var(--badgeBg);
+  color: var(--badgeFg);
+  font-family: var(--font-mono, 'IBM Plex Mono'), ui-monospace, monospace;
+  font-weight: 600;
+}

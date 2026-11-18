@@ -1,0 +1,191 @@
+/* Canvas: PropDetail.dc.html "Game log vs …" chart. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.frame {
+  position: relative;
+}
+
+.chart {
+  position: relative;
+  padding: 8px 4px 0 44px;
+}
+
+.axis {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 36px;
+  height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: var(--font-mono, 'IBM Plex Mono'), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.plot {
+  position: relative;
+  height: 260px;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  border-bottom: 1px solid var(--inputbd);
+}
+
+.grid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--surface2);
+}
+
+.col {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+
+.value {
+  font-family: var(--font-mono, 'IBM Plex Mono'), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.valueHit {
+  color: var(--brandText);
+}
+
+.bar {
+  display: block;
+  width: 100%;
+  max-width: 40px;
+  border-radius: 6px 6px 0 0;
+  transition:
+    height 0.25s ease,
+    background-color 0.2s ease;
+}
+
+.hit {
+  background: var(--brand);
+}
+
+.miss {
+  background: var(--miss);
+}
+
+.push {
+  background: var(--push);
+}
+
+.bar[data-h2h='true'] {
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+.line {
+  position: absolute;
+  left: -6px;
+  right: 0;
+  height: 2px;
+  display: flex;
+  justify-content: flex-end;
+  background: var(--chartLine);
+  transition: bottom 0.25s ease;
+}
+
+.lineLabel {
+  height: 14px;
+  padding: 3px 8px;
+  border-radius: var(--radius-badge, 6px);
+  background: var(--chartLine);
+  color: var(--chartLineFg);
+  font-family: var(--font-mono, 'IBM Plex Mono'), ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 14px;
+  transform: translateY(-50%);
+}
+
+.xlabels {
+  display: flex;
+  gap: 6px;
+  padding-top: 8px;
+}
+
+.xlabel {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.xmain {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--veil);
+  text-align: center;
+}
+
+.emptyText {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.h2hSwatch {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
