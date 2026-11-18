@@ -1,5 +1,6 @@
 import {
   closeDb,
+  count,
   countDistinct,
   desc,
   eq,
@@ -7,7 +8,9 @@ import {
   injuries,
   jobRuns,
   playerGameLogs,
+  propMetrics,
   propOffers,
+  teamDvp,
   type Db,
 } from '@blueline/db';
 import { createTestDb } from '@blueline/db/testing';
@@ -45,6 +48,21 @@ describe('seed', () => {
     expect((await counts(db)).logs).toBeGreaterThan(5000);
   });
 
+  it('precomputes prop metrics for every upcoming game with offers', async () => {
+    const upcoming = await db.select().from(games).where(eq(games.status, 'scheduled'));
+    const rows = await db.select().from(propMetrics);
+    for (const g of upcoming) {
+      const mine = rows.filter((r) => r.gameId === g.id);
+      expect(mine.length, g.id).toBeGreaterThan(0);
+      expect(mine.filter((r) => r.side === 'over').length).toBe(
+        mine.filter((r) => r.side === 'under').length,
+      );
+    }
+    expect(rows.some((r) => r.rateL10 !== null && r.dvpTier !== null && r.bestPrice !== null)).toBe(
+      true,
+    );
+  });
+
   it('loads injuries and prop offers from ≥ 3 books for every upcoming game', async () => {
     expect((await db.select().from(injuries)).length).toBeGreaterThan(50);
     const offers = await db.select().from(propOffers);
@@ -67,7 +85,10 @@ describe('seed', () => {
       'precompute',
     ]);
     expect(runs.every((r) => r.status === 'ok')).toBe(true);
-    expect(logs).toContain('precompute not implemented yet');
+    const [pm] = await db.select({ n: count() }).from(propMetrics);
+    const [dv] = await db.select({ n: count() }).from(teamDvp);
+    expect(pm!.n).toBeGreaterThan(0);
+    expect(dv!.n).toBeGreaterThan(0);
     expect((await counts(db)).raw).toBe(0); // fixtures are not external responses
   });
 });
