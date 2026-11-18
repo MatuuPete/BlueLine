@@ -5,6 +5,7 @@ import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
 import { parseTheme, THEME_COOKIE } from '../../../lib/theme';
 import styles from '../_ui/page.module.css';
+import { SignOutButton } from '../../_auth/SignOutButton';
 import { SettingsForm } from './SettingsForm';
 
 export const metadata: Metadata = { title: 'Settings' };
@@ -22,6 +23,12 @@ export default async function SettingsPage() {
         <p className={styles.sub}>Theme, odds format, your sportsbooks and the intro.</p>
       </div>
       <SettingsForm initial={settings} />
+      <section aria-labelledby="account-heading">
+        <h2 id="account-heading" className={styles.sub}>
+          Account
+        </h2>
+        <SignOutButton />
+      </section>
     </div>
   );
 }

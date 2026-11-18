@@ -6,7 +6,7 @@
  * - Build assets (/_next/static, icons): cache first; they are content-hashed.
  * - API calls and everything else: straight to the network, never cached.
  */
-const VERSION = 'blueline-v1';
+const VERSION = 'blueline-v2';
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
 const OFFLINE_URL = '/offline';
@@ -74,5 +74,12 @@ self.addEventListener('fetch', (event) => {
   }
   if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/')) {
     event.respondWith(assetCacheFirst(request));
+  }
+});
+
+// Sign-out: drop every cache so no signed-in page stays readable offline.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SIGN_OUT') {
+    event.waitUntil(caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))));
   }
 });

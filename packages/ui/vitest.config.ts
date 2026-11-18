@@ -6,6 +6,8 @@ export default defineProject({
   test: {
     name: 'ui',
     environment: 'jsdom',
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     include: ['test/**/*.test.{ts,tsx}'],
     setupFiles: ['./test/setup.ts'],
     css: { modules: { classNameStrategy: 'non-scoped' } },

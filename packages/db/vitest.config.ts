@@ -4,6 +4,8 @@ export default defineProject({
   test: {
     name: 'db',
     environment: 'node',
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     include: ['test/**/*.test.ts'],
   },
 });

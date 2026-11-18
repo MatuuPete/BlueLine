@@ -3,7 +3,7 @@ import { ButtonLink } from '../_ui/ButtonLink';
 import { Standalone } from '../_ui/Standalone';
 
 export const metadata: Metadata = { title: 'Offline' };
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 /** Served by the service worker when a page is requested offline. */
 export default function OfflinePage() {

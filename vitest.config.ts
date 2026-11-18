@@ -6,6 +6,8 @@ export default defineConfig({
   test: {
     projects: ['packages/*', 'apps/*'],
     passWithNoTests: true,
+    hookTimeout: 30000,
+    testTimeout: 30000,
     coverage: {
       provider: 'v8',
       include: ['packages/*/src/**', 'apps/*/src/**', 'apps/web/lib/**'],

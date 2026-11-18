@@ -3,6 +3,7 @@ import { securityHeaders } from './lib/security';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  agentRules: false,
   poweredByHeader: false,
   // Workspace packages ship TypeScript source; Next compiles them.
   transpilePackages: [
