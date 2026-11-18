@@ -24,7 +24,7 @@ import {
 import {
   and,
   asc,
-  count,
+  max,
   desc,
   eq,
   games,
@@ -282,7 +282,9 @@ export async function computeMetrics(ctx: JobContext, targets: GameRow[]): Promi
     (outByTeam.get(teamId) ?? [])
       .filter((r) => r.playerId !== playerId)
       .map((r) => {
-        const m = minutes.get(`${r.playerId}|${season}`);
+        // No minutes yet this season (e.g. out since opening night): last season's average.
+        const m =
+          minutes.get(`${r.playerId}|${season}`) ?? minutes.get(`${r.playerId}|${season - 1}`);
         return {
           playerId: r.playerId,
           name: r.name,
@@ -462,10 +464,34 @@ export async function computeMetrics(ctx: JobContext, targets: GameRow[]): Promi
 }
 
 /**
+ * `team_dvp` is stale when it is empty or a final game with box-score lines
+ * tipped after it was last computed.
+ */
+export async function dvpIsStale(ctx: JobContext): Promise<boolean> {
+  const [last] = await ctx.db.select({ at: max(teamDvp.computedAt) }).from(teamDvp);
+  if (!last?.at) return true;
+  const [newest] = await ctx.db
+    .select({ tip: max(games.tipAt) })
+    .from(games)
+    .where(
+      and(
+        eq(games.status, 'final'),
+        sql`exists (select 1 from ${playerGameLogs} where ${playerGameLogs.gameId} = ${games.id})`,
+      ),
+    );
+  return newest?.tip != null && newest.tip.getTime() > last.at.getTime();
+}
+
+/** Game statuses whose props are over: their rows leave the board. */
+const FINISHED_STATUSES: GameStatus[] = ['final', 'postponed', 'canceled'];
+
+/**
  * precompute [--incremental]
- * Rebuilds `team_dvp` (skipped by --incremental unless the table is empty),
- * then `prop_metrics` for live games (scheduled or in progress) dated today
- * (America/New_York) or later; --incremental limits it to games tipping today.
+ * Rebuilds `team_dvp` (always in a full run; with --incremental only when it
+ * is stale, see `dvpIsStale`), then `prop_metrics` for live games (scheduled
+ * or in progress) dated today (America/New_York) or later; --incremental
+ * limits it to games tipping today. A full run also deletes the rows of
+ * finished (final, postponed, canceled) games.
  * Idempotent: the same inputs and clock give the same rows.
  */
 export const precompute: Job = async (ctx, opts) => {
@@ -473,8 +499,24 @@ export const precompute: Job = async (ctx, opts) => {
   const today = nyDate(ctx.now);
 
   let dvpRows: number | null = null;
-  const [dvpCount] = await ctx.db.select({ n: count() }).from(teamDvp);
-  if (!incremental || dvpCount!.n === 0) dvpRows = (await computeDvp(ctx)).rows;
+  if (!incremental || (await dvpIsStale(ctx))) dvpRows = (await computeDvp(ctx)).rows;
+
+  let finishedDeleted = 0;
+  if (!incremental) {
+    const gone = await ctx.db
+      .delete(propMetrics)
+      .where(
+        inArray(
+          propMetrics.gameId,
+          ctx.db
+            .select({ id: games.id })
+            .from(games)
+            .where(inArray(games.status, FINISHED_STATUSES)),
+        ),
+      )
+      .returning({ k: propMetrics.propKey });
+    finishedDeleted = gone.length;
+  }
 
   const targets = await ctx.db
     .select()
@@ -494,6 +536,7 @@ export const precompute: Job = async (ctx, opts) => {
       games: targets.length,
       rows: res.rows,
       deleted: res.deleted,
+      finishedDeleted,
       dvpRows,
       unplaced: res.unplaced,
     },
