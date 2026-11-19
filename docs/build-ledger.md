@@ -165,3 +165,5 @@ Spec: docs/superpowers/specs/2026-11-18-nba-props-app-design.md (reachable). Bra
 - Final fix wave re-review: 17/17 ADDRESSED, no new breakage; C1 verified by roles test in PGlite (8/8).
 - Final fix wave: complete — merged into build/v1.
 - Post-merge minor (deferred): slip fallback label says "no shared games" when 1–4 exist; prune skipped on a failed boxscore day; web_role SELECT on provider_aliases unused.
+- 2026-11-19: user approved a Vercel deploy kit (Google + GitHub sign-in): setup:live command, vercel.json, conditional providers, workflow secret guards, docs/DEPLOY.md. Branch feat/vercel-deploy-kit (worktree d:/Codes/blueline-wt/deploy-kit).
+- Deploy kit review: Safe to merge and run (no Critical/Important). Minor deferred: role passwords altered before files rewritten on re-run error; legacy env fallbacks; file mode no-op on Windows; existing login role attributes not reset; admin exports in db barrel.
