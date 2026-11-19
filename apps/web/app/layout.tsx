@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   // Matches --chrome in each theme (manifest colors cannot read CSS variables).
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#012169' },
-    { media: '(prefers-color-scheme: dark)', color: '#020a1e' },
+    { media: '(prefers-color-scheme: dark)', color: '#0e0f10' },
   ],
 };
 

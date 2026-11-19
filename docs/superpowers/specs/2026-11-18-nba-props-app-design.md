@@ -283,14 +283,14 @@ The prop detail page repeats it at full size: a game-log bar chart with the line
 |---|---|---|---|
 | `--brand` (Duke Blue, fills) | `#00539B` | `#2A72C0` | Hit bars, chips, primary buttons (white text passes on both) |
 | `--brandText` | `#00539B` | `#5AA2EE` | Links, positive edge, brand-colored text |
-| `--chrome` | `#012169` | `#020A1E` | Top bar |
-| `--heading` | `#012169` | `#EAF1FB` | Display headings |
-| `--bg` | `#FFFFFF` | `#06122B` | Page background |
-| `--surface` (Mist) | `#F4F7FB` | `#0A1936` | Surfaces, filter panels |
-| `--ink` | `#0A1730` | `#EAF1FB` | Body text |
-| `--muted` | `#51627E` | `#93A4C0` | Labels, meta text (6.2:1 on white, 6.9:1 on dark surface) |
-| `--line` | `#DCE4EF` | `#1D3157` | Borders and dividers |
-| `--miss` (slate) | `#7F92AD` | `#566C91` | Misses in charts (3:1 graphic contrast on both grounds) |
+| `--chrome` | `#012169` | `#0E0F10` | Top bar |
+| `--heading` | `#012169` | `#F2F3F5` | Display headings |
+| `--bg` | `#FFFFFF` | `#141517` | Page background |
+| `--surface` (Mist) | `#F4F7FB` | `#1C1D20` | Surfaces, filter panels |
+| `--ink` | `#0A1730` | `#ECEDEF` | Body text |
+| `--muted` | `#51627E` | `#A3A7AE` | Labels, meta text (6.2:1 on white, 7.0:1 on dark surface) |
+| `--line` | `#DCE4EF` | `#2F3237` | Borders and dividers |
+| `--miss` (slate) | `#7F92AD` | `#5F646C` | Misses in charts (3:1 graphic contrast on both grounds) |
 | `--push` | `#E0B53B` | `#E0B53B` | Pushes |
 | `--signal` | `#9A3412` | `#F4A27A` | Only for tough matchups and Questionable |
 | `--danger` | `#B42318` | `#F97066` | Only for Out |
@@ -305,11 +305,11 @@ The prop detail page repeats it at full size: a game-log bar chart with the line
 
 | Range | Background | Text |
 |---|---|---|
-| under 40% | `#0E1E3D` | `#93A4C0` |
-| 40–54% | `#15305A` | `#EAF1FB` |
+| under 40% | `#1C1D20` | `#A3A7AE` |
+| 40–54% | `#23303F` | `#ECEDEF` |
 | 55–69% | `#1F4A85` | `#FFFFFF` |
 | 70–84% | `#2A72C0` | `#FFFFFF` |
-| 85%+ | `#5AA2EE` | `#06122B` |
+| 85%+ | `#5AA2EE` | `#0E0F10` |
 
 The full token set (hover, segmented, badge, defense-chip and chrome tokens) lives in the canvas's Prop board artboard and is copied verbatim into `packages/ui/tokens.css`.
 
@@ -327,7 +327,7 @@ The full token set (hover, segmented, badge, defense-chip and chrome tokens) liv
   - a light pulse travels along the line every 3.6s
   - a highlight sweeps across the outlined "LINE"
   - a pause-motion button stops every loop; reduced-motion users get a still frame
-- **Dark by default** (navy-black ground with a soft blue glow); the light version is white with Duke Blue bars.
+- **Dark by default** (neutral near-black ground with a soft blue glow); the light version is white with Duke Blue bars.
 - Shown on first visit and from the logo. A "skip intro" preference sends returning users straight to the board.
 
 **Hit-rate heat scale.** The number and the fraction are always printed in the cell, and every step passes 4.5:1. The active window gets a 2px navy inset ring.

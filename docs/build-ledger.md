@@ -167,3 +167,6 @@ Spec: docs/superpowers/specs/2026-11-18-nba-props-app-design.md (reachable). Bra
 - Post-merge minor (deferred): slip fallback label says "no shared games" when 1–4 exist; prune skipped on a failed boxscore day; web_role SELECT on provider_aliases unused.
 - 2026-11-19: user approved a Vercel deploy kit (Google + GitHub sign-in): setup:live command, vercel.json, conditional providers, workflow secret guards, docs/DEPLOY.md. Branch feat/vercel-deploy-kit (worktree d:/Codes/blueline-wt/deploy-kit).
 - Deploy kit review: Safe to merge and run (no Critical/Important). Minor deferred: role passwords altered before files rewritten on re-run error; legacy env fallbacks; file mode no-op on Windows; existing login role attributes not reset; admin exports in db barrel.
+- 2026-11-19: user approved Bet tracker (log any bet, decimal odds, PHP default, auto payout, PnL dashboard with cumulative chart, by book/month, filters; import 6 Stake bets after deploy). Branch feat/bet-tracker.
+- 2026-11-19: user asked dark mode be grayish-black instead of navy (keep Duke Blue accents). Branch feat/dark-neutral.
+- Dark-neutral: done 4f3186a (vitest 720, e2e 21/21 incl. dark axe). Lead viewed board/detail dark shots — neutral, accents intact. Deferred minor: dark --inputbd 1.68:1 (<3:1 non-text) → bump to ~#63676E later; --miss raised to #686D75 for 3:1.
