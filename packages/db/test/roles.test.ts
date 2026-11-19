@@ -65,6 +65,17 @@ describe('roles.sql', () => {
     expect(await allowed('web_role', 'SELECT * FROM slip_legs')).toBe(true);
   });
 
+  it('web_role reads and writes bets', async () => {
+    for (const stmt of [
+      "INSERT INTO bets (user_id, placed_on, book, description, odds_decimal, stake) VALUES ('u1', '2026-11-18', 'Stake', 'x', 1.9, 10)",
+      'SELECT * FROM bets',
+      "UPDATE bets SET result = 'win', payout = 19 WHERE user_id = 'u1'",
+      "DELETE FROM bets WHERE user_id = 'u1'",
+    ]) {
+      expect(await allowed('web_role', stmt), stmt).toBe(true);
+    }
+  });
+
   it('worker_role writes data tables', async () => {
     expect(
       await allowed('worker_role', "UPDATE teams SET name = 'Boston Celtics' WHERE id = 'bos'"),
@@ -106,6 +117,8 @@ describe('roles.sql', () => {
     expect(await allowed('worker_role', 'SELECT * FROM favorites')).toBe(false);
     expect(await allowed('worker_role', 'SELECT * FROM user_settings')).toBe(false);
     expect(await allowed('worker_role', 'SELECT * FROM filter_presets')).toBe(false);
+    expect(await allowed('worker_role', 'SELECT * FROM bets')).toBe(false);
+    expect(await allowed('worker_role', 'DELETE FROM bets')).toBe(false);
     expect(
       await allowed(
         'worker_role',
@@ -151,6 +164,7 @@ describe('roles.sql', () => {
     'filter_presets',
     'slips',
     'slip_legs',
+    'bets',
   ];
 
   it('worker_role can SELECT every relation its jobs query (incl. the prop_current view)', async () => {

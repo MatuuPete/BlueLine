@@ -1,6 +1,8 @@
 // BlueLine Postgres schema (spec §4). Column names are explicit snake_case.
 // Only `import type` from contracts here: drizzle-kit loads this file directly.
 import type {
+  BetResult,
+  BetType,
   BoardFilter,
   Book,
   DvpTier,
@@ -16,11 +18,13 @@ import { sql } from 'drizzle-orm';
 import {
   bigint,
   boolean,
+  char,
   date,
   doublePrecision,
   index,
   integer,
   jsonb,
+  numeric,
   pgTable,
   pgView,
   primaryKey,
@@ -483,5 +487,35 @@ export const slipLegs = pgTable(
   (t) => [
     index('slip_legs_slip_idx').on(t.slipId),
     index('slip_legs_result_game_idx').on(t.result, t.gameId),
+  ],
+);
+
+/** A bet the owner placed on any book (player prop, team total, parlay). Money is exact numeric. */
+export const bets = pgTable(
+  'bets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    placedOn: date('placed_on', { mode: 'string' }).notNull(),
+    book: text('book').notNull(),
+    sport: text('sport').notNull().default('NBA'),
+    event: text('event'),
+    description: text('description').notNull(),
+    betType: text('bet_type').$type<BetType>().notNull().default('single'),
+    legs: integer('legs').notNull().default(1),
+    oddsDecimal: numeric('odds_decimal', { precision: 8, scale: 3 }).notNull(),
+    stake: numeric('stake', { precision: 12, scale: 2 }).notNull(),
+    currency: char('currency', { length: 3 }).notNull().default('PHP'),
+    result: text('result').$type<BetResult>().notNull().default('pending'),
+    payout: numeric('payout', { precision: 12, scale: 2 }),
+    notes: text('notes'),
+    createdAt: createdAt(),
+    updatedAt: tstz('updated_at').notNull().defaultNow(),
+  },
+  (t) => [
+    index('bets_user_placed_idx').on(t.userId, t.placedOn.desc()),
+    index('bets_user_result_idx').on(t.userId, t.result),
   ],
 );
