@@ -1,5 +1,7 @@
 # BlueLine runbook
 
+Going live for the first time? Follow [DEPLOY.md](DEPLOY.md) (`corepack pnpm setup:live` automates the database, secrets and first data pull). This runbook is the reference behind it.
+
 ## Local development
 
 Requires Node 24 and corepack (`corepack enable`; on Windows without pnpm on PATH, prefix commands with `corepack`).
@@ -135,6 +137,8 @@ Open `/status` on the deployed site. It shows the last run per job (status, dura
 - **gitleaks:** `gitleaks-action` is free for personal-account repos; for organization-owned repos it requires a `GITLEAKS_LICENSE` secret (add it to the `security` job env in `ci.yml`).
 
 ## First deploy checklist
+
+The guided path is [DEPLOY.md](DEPLOY.md); `corepack pnpm setup:live` performs steps 2 to 4 and the first data pull for you. The manual steps:
 
 1. Create the Neon project and database (Neon section above).
 2. Migrate as the owner: `DATABASE_URL=<owner url> pnpm --filter @blueline/db db:migrate` (or set `DATABASE_URL_OWNER` and run Actions > Migrate).
