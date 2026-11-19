@@ -24,7 +24,7 @@ export interface MenuItem {
 /**
  * Button + menu (WAI-ARIA menu button). The list is portalled to <body> and positioned with
  * `position: fixed`, so a scrolling table never clips it. It flips above the button near the
- * bottom edge and closes on scroll or resize rather than drifting away from its button.
+ * bottom edge and follows its button on scroll and resize.
  */
 export function ActionMenu({
   label,
@@ -59,8 +59,7 @@ export function ActionMenu({
         [],
     );
 
-  useLayoutEffect(() => {
-    if (!open) return;
+  const place = useCallback(() => {
     const t = triggerRef.current;
     const m = menuRef.current;
     if (!t || !m) return;
@@ -71,9 +70,19 @@ export function ActionMenu({
     let top = r.bottom + 4;
     if (top + h > window.innerHeight - 8 && r.top - h - 4 >= 8) top = r.top - h - 4;
     setPos({ top, left });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (open) place();
+  }, [open, place]);
+
+  // Focus only once the menu is visible: a hidden element cannot take focus.
+  const placed = pos !== null;
+  useEffect(() => {
+    if (!open || !placed) return;
     const list = enabled();
-    (focusAt.current === 'last' ? list[list.length - 1] : list[0])?.focus();
-  }, [open]);
+    (focusAt.current === 'last' ? list[list.length - 1] : list[0])?.focus({ preventScroll: true });
+  }, [open, placed]);
 
   useEffect(() => {
     if (!open) return;
@@ -82,16 +91,16 @@ export function ActionMenu({
       if (menuRef.current?.contains(n) || triggerRef.current?.contains(n)) return;
       close(false);
     };
-    const dismiss = () => close(false);
+    // The menu is fixed to the viewport, so it follows its button instead of closing.
     document.addEventListener('pointerdown', away);
-    window.addEventListener('resize', dismiss);
-    window.addEventListener('scroll', dismiss, true);
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
     return () => {
       document.removeEventListener('pointerdown', away);
-      window.removeEventListener('resize', dismiss);
-      window.removeEventListener('scroll', dismiss, true);
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
     };
-  }, [open, close]);
+  }, [open, close, place]);
 
   const onTriggerKey = (e: KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {

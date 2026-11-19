@@ -131,38 +131,48 @@ function Breakdown({
         <p className={page.muted}>No bets yet.</p>
       ) : (
         <div className={styles.scroll} tabIndex={0} role="region" aria-label={`${title} table`}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">{keyLabel}</th>
-                <th scope="col" className={styles.num}>
+          <table className={`${styles.table} ${styles.breakdown}`} role="table">
+            <thead role="rowgroup">
+              <tr role="row">
+                <th scope="col" role="columnheader">
+                  {keyLabel}
+                </th>
+                <th scope="col" className={styles.num} role="columnheader">
                   Settled
                 </th>
-                <th scope="col" className={styles.num}>
+                <th scope="col" className={styles.num} role="columnheader">
                   Pending
                 </th>
-                <th scope="col" className={styles.num}>
+                <th scope="col" className={styles.num} role="columnheader">
                   Staked
                 </th>
-                <th scope="col" className={styles.num}>
+                <th scope="col" className={styles.num} role="columnheader">
                   PnL
                 </th>
-                <th scope="col" className={styles.num}>
+                <th scope="col" className={styles.num} role="columnheader">
                   ROI
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody role="rowgroup">
               {rows.map((r) => (
-                <tr key={r.key}>
-                  <th scope="row">{fmtKey ? fmtKey(r.key) : r.key}</th>
-                  <td className={styles.num}>{r.settled}</td>
-                  <td className={styles.num}>{r.pending}</td>
-                  <td className={styles.num}>{formatMoney(r.staked, currency)}</td>
-                  <td className={styles.num}>
+                <tr key={r.key} role="row">
+                  <th scope="row" role="rowheader">
+                    {fmtKey ? fmtKey(r.key) : r.key}
+                  </th>
+                  <td className={styles.num} data-label="Settled" role="cell">
+                    {r.settled}
+                  </td>
+                  <td className={styles.num} data-label="Pending" role="cell">
+                    {r.pending}
+                  </td>
+                  <td className={styles.num} data-label="Staked" role="cell">
+                    <span className={styles.money}>{formatMoney(r.staked, currency)}</span>
+                  </td>
+                  <td className={styles.num} data-label="PnL" role="cell">
                     <Pnl value={r.settled === 0 ? null : r.net} currency={currency} />
                   </td>
-                  <td className={styles.num}>
+                  <td className={styles.num} data-label="ROI" role="cell">
                     <span className={tone(r.roi)}>{formatSignedPercent(r.roi)}</span>
                   </td>
                 </tr>
