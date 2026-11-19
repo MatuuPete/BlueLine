@@ -3,6 +3,7 @@ import {
   activePreset,
   filterToQuery,
   formatDay,
+  parseBetTitle,
   formatMonth,
   parseBetFilter,
   presetRange,
@@ -48,5 +49,31 @@ describe('bet UI helpers', () => {
     expect(formatDay('2026-11-18')).toBe('Nov 18, 2026');
     expect(formatMonth('2026-11')).toBe('Nov 2026');
     expect(formatDay('nope')).toBe('nope');
+  });
+});
+
+describe('formatDay with a current year', () => {
+  it('drops the year only when it matches', () => {
+    expect(formatDay('2026-11-19', '2026')).toBe('Nov 19');
+    expect(formatDay('2025-12-31', '2026')).toBe('Dec 31, 2025');
+  });
+});
+
+describe('parseBetTitle', () => {
+  it('splits imported SGM descriptions into legs', () => {
+    expect(parseBetTitle('4-leg SGM: A Over 1.5 · ✓ B Under 2 · C · D', 'parlay', 4)).toEqual({
+      title: '4-leg SGM',
+      legs: ['A Over 1.5', '✓ B Under 2', 'C', 'D'],
+    });
+  });
+  it('falls back to " · " for other parlays and leaves singles alone', () => {
+    expect(parseBetTitle('X · Y', 'parlay', 2)).toEqual({
+      title: '2-leg parlay',
+      legs: ['X', 'Y'],
+    });
+    expect(parseBetTitle('Over 61.5 · 3rd Quarter Total', 'single', 1)).toEqual({
+      title: 'Over 61.5 · 3rd Quarter Total',
+      legs: [],
+    });
   });
 });

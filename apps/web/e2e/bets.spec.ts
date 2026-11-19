@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
+import { seedBets } from './bets-seed';
 import { expect, test } from './fixtures';
 
 const net = (page: Page) => page.getByTestId('kpi-net');
@@ -61,7 +62,8 @@ test('log a win and a loss, then edit and delete', async ({ page }) => {
   await expect(chart).toBeVisible();
 
   // Edit the loss: a smaller stake loses less.
-  await page.getByRole('button', { name: 'Edit bet: Heat ML' }).first().click();
+  await page.getByRole('button', { name: 'More actions for Heat ML' }).first().click();
+  await page.getByRole('menuitem', { name: 'Edit' }).click();
   const edit = page.getByRole('dialog', { name: 'Edit bet' });
   await expect(edit.getByLabel('Stake')).toHaveValue('100');
   await edit.getByLabel('Stake').fill('50');
@@ -71,9 +73,10 @@ test('log a win and a loss, then edit and delete', async ({ page }) => {
 
   // Delete the win (two steps: Delete, then Confirm delete).
   await page
-    .getByRole('button', { name: 'Delete bet: Over 61.5 · 3rd Quarter Total' })
+    .getByRole('button', { name: 'More actions for Over 61.5 · 3rd Quarter Total' })
     .first()
     .click();
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
   await page
     .getByRole('button', { name: 'Confirm delete: Over 61.5 · 3rd Quarter Total' })
     .first()
@@ -84,7 +87,8 @@ test('log a win and a loss, then edit and delete', async ({ page }) => {
   // A pending bet can be settled in one click.
   await logBet(page, { description: 'Bucks +4.5', odds: '1.9', stake: '200', result: 'pending' });
   await expect(net(page)).toHaveText('−₱50.00');
-  await page.getByRole('button', { name: 'Mark win: Bucks +4.5' }).first().click();
+  await page.getByRole('button', { name: 'Settle: Bucks +4.5' }).first().click();
+  await page.getByRole('menuitem', { name: 'Win' }).click();
   await expect(net(page)).toHaveText('+₱130.00');
 });
 
@@ -97,6 +101,157 @@ test('the form validates, traps focus and closes on Escape', async ({ page }) =>
   await expect(dialog.getByText('Enter a stake above zero')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
+});
+
+const listRows = (page: Page) => page.locator('table').last().locator('tbody tr');
+
+test.describe('bets table polish', () => {
+  test.beforeEach(async ({ page }) => {
+    // Earlier serial tests leave bets behind; start these from a clean list.
+    const res = await page.request.get('/api/bets');
+    const body = (await res.json()) as { bets?: { id: string }[] } | { id: string }[];
+    const list = Array.isArray(body) ? body : (body.bets ?? []);
+    for (const b of list) await page.request.delete(`/api/bets/${b.id}`);
+    await seedBets(page);
+    await page.goto('/bets');
+  });
+
+  test('rows share one compact height, money never wraps, dates drop the current year', async ({
+    page,
+  }) => {
+    const rows = listRows(page);
+    await expect(rows).toHaveCount(4);
+    const heights = await rows.evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect().height),
+    );
+    for (const h of heights) expect(h).toBeLessThanOrEqual(72);
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(10);
+
+    const pnl = rows.filter({ hasText: 'LeBron James' }).locator('td').nth(7);
+    await expect(pnl).toHaveText('−₱250.00');
+    await expect(rows.filter({ hasText: '76ers to win' }).locator('td').nth(7)).toHaveText(
+      '+₱395.25',
+    );
+    expect((await pnl.locator('span').boundingBox())!.height).toBeLessThan(26);
+    await expect(rows.first().locator('td').first()).toHaveText(/^[A-Z][a-z]{2} \d{1,2}$/);
+  });
+
+  test('settle menu works by keyboard and updates the row and KPIs', async ({ page }) => {
+    const settle = page
+      .getByRole('button', { name: 'Settle: Cade Cunningham Over 24.5 Points' })
+      .first();
+    await expect(settle).toHaveAttribute('aria-haspopup', 'menu');
+    await expect(settle).toHaveAttribute('aria-expanded', 'false');
+    await settle.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(settle).toHaveAttribute('aria-expanded', 'true');
+    const items = page.getByRole('menuitem');
+    await expect(items).toHaveText(['Win', 'Loss', 'Push', 'Void', 'Cash-out…']);
+    await expect(items.first()).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await expect(items.nth(1)).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(items.last()).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(settle).toBeFocused();
+
+    await settle.click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.getByRole('heading', { name: 'Bets', level: 1 }).click();
+    await expect(page.getByRole('menu')).toHaveCount(0);
+
+    const before = await net(page).innerText();
+    await settle.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await expect(net(page)).not.toHaveText(before);
+    await expect(net(page)).toHaveText('+₱307.75');
+    await expect(page.getByText('1 pending, not counted')).toBeVisible();
+    await expect(
+      listRows(page).filter({ hasText: 'Cade Cunningham' }).locator('td').nth(7),
+    ).toHaveText('+₱162.50');
+  });
+
+  test('more menu: Cash-out preselects the form, Delete keeps its confirm', async ({ page }) => {
+    await page
+      .getByRole('button', { name: 'Settle: Cade Cunningham Over 24.5 Points' })
+      .first()
+      .click();
+    await page.getByRole('menuitem', { name: 'Cash-out…' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Edit bet' });
+    await expect(dialog.getByLabel('Result')).toHaveValue('cashout');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    await page
+      .getByRole('button', { name: 'More actions for LeBron James Over 13.5 Assists + Rebounds' })
+      .first()
+      .click();
+    await expect(page.getByRole('menuitem')).toHaveText(['Edit', 'Delete']);
+    await page.getByRole('menuitem', { name: 'Delete' }).click();
+    await page
+      .getByRole('button', { name: /^Confirm delete: LeBron/ })
+      .first()
+      .click();
+    await expect(page.getByRole('status').filter({ hasText: 'Bet deleted.' })).toBeVisible();
+  });
+
+  test('parlay legs disclosure', async ({ page }) => {
+    const row = listRows(page).filter({ hasText: '4-leg SGM' });
+    await expect(row.getByText('4-leg SGM', { exact: true })).toBeVisible();
+    const toggle = row.getByRole('button', { name: /Show legs/ });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(row.getByRole('listitem')).toHaveCount(0);
+    await toggle.click();
+    await expect(row.getByRole('button', { name: /Hide legs/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(row.getByRole('listitem')).toHaveCount(4);
+    await expect(row.getByRole('listitem').nth(1)).toHaveText('Mo Bamba Under 20.5 Pts+Ast+Reb');
+  });
+
+  test('breakdowns show settled and pending counts', async ({ page }) => {
+    const t = page.getByRole('region', { name: 'By sportsbook table' });
+    await expect(t.getByRole('columnheader')).toHaveText([
+      'Book',
+      'Settled',
+      'Pending',
+      'Staked',
+      'PnL',
+      'ROI',
+    ]);
+    const cells = t.locator('tbody tr').first().locator('th,td');
+    await expect(cells.nth(1)).toHaveText('2');
+    await expect(cells.nth(2)).toHaveText('2');
+    await expect(cells.nth(3)).toHaveText('₱505.00');
+  });
+});
+
+test.describe('bets at 390px', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('breakdown PnL and ROI stay inside the viewport and the page does not scroll sideways', async ({
+    page,
+  }) => {
+    await seedBets(page);
+    await page.goto('/bets');
+    for (const name of ['By sportsbook table', 'By month table']) {
+      const row = page.getByRole('region', { name }).locator('tbody tr').first();
+      await expect(row).toBeVisible();
+      for (const label of ['PnL', 'ROI', 'Staked']) {
+        const box = await row.locator(`td[data-label="${label}"]`).boundingBox();
+        expect(box, `${name} ${label}`).not.toBeNull();
+        expect(box!.x).toBeGreaterThanOrEqual(0);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+      }
+    }
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
 });
 
 const SIZES = [
@@ -131,6 +286,28 @@ for (const size of SIZES) {
         // Chart tooltip state, then the dialog.
         await page.getByRole('group', { name: /PnL chart/ }).focus();
         expect(await scan()).toEqual([]);
+
+        // Seeded bets: expanded parlay, then each open menu.
+        await seedBets(page);
+        await page.goto('/bets');
+        await page
+          .getByRole('button', { name: /^Show legs/ })
+          .first()
+          .click();
+        expect(await scan()).toEqual([]);
+        await page
+          .getByRole('button', { name: /^Settle:/ })
+          .first()
+          .click();
+        await expect(page.getByRole('menu')).toBeVisible();
+        expect(await scan()).toEqual([]);
+        await page.keyboard.press('Escape');
+        await page
+          .getByRole('button', { name: /^More actions for/ })
+          .first()
+          .click();
+        expect(await scan()).toEqual([]);
+        await page.keyboard.press('Escape');
         await page.getByRole('button', { name: 'Log a bet' }).first().click();
         await expect(page.getByRole('dialog', { name: 'Log a bet' })).toBeVisible();
         expect(await scan()).toEqual([]);
