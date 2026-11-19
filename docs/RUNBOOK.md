@@ -193,7 +193,7 @@ Google sign-in also requires `email_verified`. The same email via Google or GitH
 
 ### 4. Database roles (least privilege)
 
-`packages/db/sql/roles.sql` creates `web_role` (SELECT on data tables and the `prop_current` view, but not `raw_payloads`; read/write on `users`, `user_settings`, `favorites`, `filter_presets`, `slips`, `slip_legs`) and `worker_role` (read/write on data tables, SELECT on `prop_current`; on user tables only SELECT and `UPDATE (result, graded_at)` on `slip_legs` for grading). Migrations keep using the owner role.
+`packages/db/sql/roles.sql` creates `web_role` (SELECT on data tables and the `prop_current` view, but not `raw_payloads`; read/write on `users`, `user_settings`, `favorites`, `filter_presets`, `slips`, `slip_legs`, `bets`) and `worker_role` (read/write on data tables, SELECT on `prop_current`; on user tables only SELECT and `UPDATE (result, graded_at)` on `slip_legs` for grading; no access to `bets`). After deploying the `0001_bets` migration, re-run `roles.sql` so `web_role` gets the new table (see [BETS.md](BETS.md)). Migrations keep using the owner role.
 
 1. Run migrations as the owner, then: `psql "$OWNER_DATABASE_URL" -v ON_ERROR_STOP=1 -f packages/db/sql/roles.sql` (or paste it into the Neon SQL Editor as the owner).
 2. Create login roles (strong passwords, Neon requires ~60 bits of entropy):
