@@ -78,16 +78,48 @@ export function parseBetFilter(sp: Record<string, string | string[] | undefined>
   return BetFilterSchema.parse(ok);
 }
 
-/** "Nov 18, 2026" for a YYYY-MM-DD date. */
-export function formatDay(ymd: string): string {
+/** "Nov 18, 2026" for a YYYY-MM-DD date; with `currentYear`, that year is left off ("Nov 18"). */
+export function formatDay(ymd: string, currentYear?: string): string {
   const d = new Date(`${ymd}T12:00:00Z`);
   if (Number.isNaN(d.getTime())) return ymd;
+  const sameYear = currentYear !== undefined && ymd.startsWith(`${currentYear}-`);
   return new Intl.DateTimeFormat('en-US', {
     timeZone: 'UTC',
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
   }).format(d);
+}
+
+export interface BetTitle {
+  /** Headline: "4-leg SGM", or the whole description for a single bet. */
+  title: string;
+  /** One entry per leg; empty when the bet is not a multi-leg description. */
+  legs: string[];
+}
+
+/**
+ * Splits a parlay description into a headline and legs. Imported slips read
+ * "4-leg SGM: Leg A · Leg B · …"; other parlays only split on " · ". Singles are untouched.
+ */
+export function parseBetTitle(description: string, betType: string, legCount: number): BetTitle {
+  const imported = /^(\d+-leg[^:]*):\s*(.+)$/i.exec(description);
+  if (imported) {
+    const legs = imported[2]!
+      .split(' · ')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (legs.length > 1) return { title: imported[1]!.trim(), legs };
+  }
+  if (betType === 'parlay') {
+    const legs = description
+      .split(' · ')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (legs.length > 1)
+      return { title: `${legCount > 1 ? legCount : legs.length}-leg parlay`, legs };
+  }
+  return { title: description, legs: [] };
 }
 
 /** "2026-11" gives "Nov 2026". */

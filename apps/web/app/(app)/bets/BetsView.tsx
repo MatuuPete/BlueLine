@@ -15,12 +15,13 @@ import {
 } from '@blueline/contracts';
 import { Button, Chip, EmptyState, Segmented } from '@blueline/ui';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useId, useState, useTransition } from 'react';
 import {
   activePreset,
   filterToQuery,
   formatDay,
   formatMonth,
+  parseBetTitle,
   PRESET_LABEL,
   presetRange,
   RESULT_LABEL,
@@ -28,6 +29,7 @@ import {
   type RangePreset,
 } from '../../../lib/bets';
 import page from '../_ui/page.module.css';
+import { ActionMenu, type MenuItem } from './ActionMenu';
 import { BetForm } from './BetForm';
 import styles from './bets.module.css';
 import { PnlChart } from './PnlChart';
@@ -35,13 +37,23 @@ import { PnlChart } from './PnlChart';
 const PRESETS: RangePreset[] = ['7d', '30d', 'month', 'all'];
 const SETTLE: BetResult[] = ['win', 'loss', 'push', 'void'];
 
+/** The more-actions button of a bet, in whichever layout (table or cards) is showing. */
+function focusMore(id: string) {
+  const all = document.querySelectorAll<HTMLElement>(`[data-menu-trigger="more-${id}"]`);
+  (Array.from(all).find((el) => el.offsetParent !== null) ?? all[0])?.focus();
+}
+
 function tone(n: number | null): string | undefined {
   return n === null || n === 0 ? undefined : n > 0 ? styles.pos : styles.neg;
 }
 
 function Pnl({ value, currency }: { value: number | null; currency: string }) {
   if (value === null) return <span className={styles.dash}>—</span>;
-  return <span className={tone(value)}>{formatSignedMoney(value, currency)}</span>;
+  return (
+    <span className={`${styles.money} ${tone(value) ?? ''}`}>
+      {formatSignedMoney(value, currency)}
+    </span>
+  );
 }
 
 function ResultChip({ result }: { result: BetResult }) {
@@ -58,6 +70,42 @@ function OddsCell({ d }: { d: number }) {
       <span className={styles.oddsMain}>{formatDecimalOdds(d)}</span>
       <span className={styles.oddsAlt}>{formatAmericanFromDecimal(d)}</span>
     </span>
+  );
+}
+
+function BetCell({ b }: { b: BetDTO }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const { title, legs } = parseBetTitle(b.description, b.betType, b.legs);
+  return (
+    <div className={styles.betBody}>
+      <p className={styles.desc} title={b.description}>
+        {title}
+      </p>
+      <p className={styles.event}>
+        {b.event ? <span>{b.event}</span> : null}
+        {b.event && legs.length > 0 ? <span aria-hidden="true"> · </span> : null}
+        {legs.length > 0 ? (
+          <button
+            type="button"
+            className={styles.legsBtn}
+            aria-expanded={open}
+            aria-controls={id}
+            onClick={() => setOpen((o) => !o)}
+          >
+            {open ? 'Hide legs' : 'Show legs'}
+            <span className="sr-only">{` (${legs.length}) for ${title}`}</span>
+          </button>
+        ) : null}
+      </p>
+      {legs.length > 0 ? (
+        <ol id={id} className={styles.legs} hidden={!open}>
+          {legs.map((l, i) => (
+            <li key={i}>{l}</li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
   );
 }
 
@@ -80,7 +128,7 @@ function Breakdown({
         {title}
       </h2>
       {rows.length === 0 ? (
-        <p className={page.muted}>Nothing settled yet.</p>
+        <p className={page.muted}>No bets yet.</p>
       ) : (
         <div className={styles.scroll} tabIndex={0} role="region" aria-label={`${title} table`}>
           <table className={styles.table}>
@@ -88,7 +136,10 @@ function Breakdown({
               <tr>
                 <th scope="col">{keyLabel}</th>
                 <th scope="col" className={styles.num}>
-                  Bets
+                  Settled
+                </th>
+                <th scope="col" className={styles.num}>
+                  Pending
                 </th>
                 <th scope="col" className={styles.num}>
                   Staked
@@ -105,10 +156,11 @@ function Breakdown({
               {rows.map((r) => (
                 <tr key={r.key}>
                   <th scope="row">{fmtKey ? fmtKey(r.key) : r.key}</th>
-                  <td className={styles.num}>{r.bets}</td>
+                  <td className={styles.num}>{r.settled}</td>
+                  <td className={styles.num}>{r.pending}</td>
                   <td className={styles.num}>{formatMoney(r.staked, currency)}</td>
                   <td className={styles.num}>
-                    <Pnl value={r.net} currency={currency} />
+                    <Pnl value={r.settled === 0 ? null : r.net} currency={currency} />
                   </td>
                   <td className={styles.num}>
                     <span className={tone(r.roi)}>{formatSignedPercent(r.roi)}</span>
@@ -128,15 +180,18 @@ export function BetsView({
   summary,
   filter,
   books,
+  year,
 }: {
   bets: BetDTO[];
   summary: BetSummaryDTO;
   filter: BetFilter;
   books: string[];
+  /** Server's current year: dates in it show without the year until the browser date is known. */
+  year: string;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const [form, setForm] = useState<{ bet: BetDTO | null } | null>(null);
+  const [form, setForm] = useState<{ bet: BetDTO | null; result?: BetResult } | null>(null);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
@@ -147,6 +202,7 @@ export function BetsView({
   // The browser's local date is only known after mount; rendering it earlier would mismatch SSR.
   const [today, setToday] = useState<string | null>(null);
   useEffect(() => setToday(todayLocal()), []);
+  const thisYear = today ? today.slice(0, 4) : year;
   const preset = today ? activePreset(filter, today) : null;
   const hasFilter = Boolean(filter.from || filter.to || filter.book || filter.result);
 
@@ -167,6 +223,8 @@ export function BetsView({
       if (!res.ok) throw new Error(String(res.status));
       setNotice(`Bet marked ${RESULT_LABEL[result].toLowerCase()}.`);
       refresh();
+      // The Settle button goes away with the pending state; keep keyboard focus on the row.
+      focusMore(b.id);
     } catch {
       setError('The bet was not updated. Try again.');
     } finally {
@@ -190,59 +248,81 @@ export function BetsView({
     }
   };
 
-  const actions = (b: BetDTO) => (
-    <div className={styles.actions}>
-      {b.result === 'pending' ? (
-        <div className={styles.settle} role="group" aria-label={`Settle ${b.description}`}>
-          <span className={styles.settleLabel}>Settle</span>
-          {SETTLE.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={styles.mini}
-              disabled={busy === b.id}
-              onClick={() => void settle(b, r)}
-              aria-label={`Mark ${RESULT_LABEL[r].toLowerCase()}: ${b.description}`}
-            >
-              {RESULT_LABEL[r]}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      <div className={styles.rowBtns}>
-        <Button
-          variant="ghost"
-          onClick={() => setForm({ bet: b })}
-          aria-label={`Edit bet: ${b.description}`}
-        >
-          Edit
-        </Button>
-        {confirm === b.id ? (
-          <>
-            <Button
-              variant="secondary"
-              disabled={busy === b.id}
-              onClick={() => void remove(b)}
-              aria-label={`Confirm delete: ${b.description}`}
-            >
-              Confirm delete
-            </Button>
-            <Button variant="ghost" onClick={() => setConfirm(null)}>
-              Cancel
-            </Button>
-          </>
-        ) : (
+  const actions = (b: BetDTO) => {
+    if (confirm === b.id) {
+      return (
+        <div className={styles.actions} role="group" aria-label={`Delete ${b.description}?`}>
+          <Button
+            variant="secondary"
+            disabled={busy === b.id}
+            onClick={() => void remove(b)}
+            aria-label={`Confirm delete: ${b.description}`}
+          >
+            Confirm delete
+          </Button>
           <Button
             variant="ghost"
-            onClick={() => setConfirm(b.id)}
-            aria-label={`Delete bet: ${b.description}`}
+            autoFocus
+            onClick={() => {
+              setConfirm(null);
+              setTimeout(() => focusMore(b.id), 0);
+            }}
           >
-            Delete
+            Cancel
           </Button>
-        )}
+        </div>
+      );
+    }
+    const settleItems: MenuItem[] = [
+      ...SETTLE.map((r) => ({
+        key: r,
+        label: RESULT_LABEL[r],
+        disabled: busy === b.id,
+        onSelect: () => void settle(b, r),
+      })),
+      {
+        key: 'cashout',
+        label: 'Cash-out…',
+        onSelect: () => setForm({ bet: b, result: 'cashout' }),
+      },
+    ];
+    const moreItems: MenuItem[] = [
+      { key: 'edit', label: 'Edit', onSelect: () => setForm({ bet: b }) },
+      { key: 'delete', label: 'Delete', danger: true, onSelect: () => setConfirm(b.id) },
+    ];
+    return (
+      <div className={styles.actions}>
+        {b.result === 'pending' ? (
+          <ActionMenu
+            className={styles.settleBtn}
+            label={
+              <>
+                Settle
+                <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+                  <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" />
+                </svg>
+              </>
+            }
+            ariaLabel={`Settle: ${b.description}`}
+            items={settleItems}
+          />
+        ) : null}
+        <ActionMenu
+          className={styles.moreBtn}
+          label={
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="5" cy="12" r="2" fill="currentColor" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+              <circle cx="19" cy="12" r="2" fill="currentColor" />
+            </svg>
+          }
+          ariaLabel={`More actions for ${b.description}`}
+          items={moreItems}
+          triggerData={`more-${b.id}`}
+        />
       </div>
-    </div>
-  );
+    );
+  };
 
   const noBetsAtAll = bets.length === 0 && !hasFilter && s.currencies.length === 0;
   const record = `${s.wins}–${s.losses}–${s.pushes}`;
@@ -489,27 +569,29 @@ export function BetsView({
                         <th scope="col" className={styles.num}>
                           PnL
                         </th>
-                        <th scope="col">Actions</th>
+                        <th scope="col" className={styles.actionsHead}>
+                          <span className="sr-only">Actions</span>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {bets.map((b) => (
                         <tr key={b.id}>
-                          <td className={styles.nowrap}>{formatDay(b.placedOn)}</td>
+                          <td className={styles.nowrap}>
+                            <time dateTime={b.placedOn}>{formatDay(b.placedOn, thisYear)}</time>
+                          </td>
                           <td>
                             <span className={styles.book}>{b.book}</span>
                           </td>
                           <td className={styles.betCell}>
-                            <span className={styles.desc}>{b.description}</span>
-                            {b.event ? <span className={styles.event}>{b.event}</span> : null}
-                            {b.betType === 'parlay' ? (
-                              <span className={styles.event}>Parlay · {b.legs} legs</span>
-                            ) : null}
+                            <BetCell b={b} />
                           </td>
                           <td className={styles.num}>
                             <OddsCell d={b.oddsDecimal} />
                           </td>
-                          <td className={styles.num}>{formatMoney(b.stake, b.currency)}</td>
+                          <td className={styles.num}>
+                            <span className={styles.money}>{formatMoney(b.stake, b.currency)}</span>
+                          </td>
                           <td>
                             <ResultChip result={b.result} />
                           </td>
@@ -517,13 +599,15 @@ export function BetsView({
                             {b.payout === null ? (
                               <span className={styles.dash}>—</span>
                             ) : (
-                              formatMoney(b.payout, b.currency)
+                              <span className={styles.money}>
+                                {formatMoney(b.payout, b.currency)}
+                              </span>
                             )}
                           </td>
                           <td className={styles.num}>
                             <Pnl value={b.profit} currency={b.currency} />
                           </td>
-                          <td>{actions(b)}</td>
+                          <td className={styles.actionsCell}>{actions(b)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -534,14 +618,12 @@ export function BetsView({
                     <li key={b.id} className={styles.card}>
                       <div className={styles.cardTop}>
                         <span className={styles.book}>{b.book}</span>
-                        <span className={styles.event}>{formatDay(b.placedOn)}</span>
+                        <time className={styles.event} dateTime={b.placedOn}>
+                          {formatDay(b.placedOn, thisYear)}
+                        </time>
                         <ResultChip result={b.result} />
                       </div>
-                      <p className={styles.desc}>{b.description}</p>
-                      {b.event ? <p className={styles.event}>{b.event}</p> : null}
-                      {b.betType === 'parlay' ? (
-                        <p className={styles.event}>Parlay · {b.legs} legs</p>
-                      ) : null}
+                      <BetCell b={b} />
                       <dl className={styles.cardNums}>
                         <div>
                           <dt>Odds</dt>
@@ -551,11 +633,13 @@ export function BetsView({
                         </div>
                         <div>
                           <dt>Stake</dt>
-                          <dd>{formatMoney(b.stake, b.currency)}</dd>
+                          <dd className={styles.money}>{formatMoney(b.stake, b.currency)}</dd>
                         </div>
                         <div>
                           <dt>Payout</dt>
-                          <dd>{b.payout === null ? '—' : formatMoney(b.payout, b.currency)}</dd>
+                          <dd className={styles.money}>
+                            {b.payout === null ? '—' : formatMoney(b.payout, b.currency)}
+                          </dd>
                         </div>
                         <div>
                           <dt>PnL</dt>
@@ -577,6 +661,7 @@ export function BetsView({
       {form ? (
         <BetForm
           bet={form.bet}
+          initialResult={form.result}
           onClose={() => setForm(null)}
           onSaved={(_saved, created) => {
             setForm(null);

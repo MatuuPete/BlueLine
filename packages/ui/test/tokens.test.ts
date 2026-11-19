@@ -143,6 +143,8 @@ describe('dark theme contrast (WCAG AA)', () => {
     ['--miss', '--surface'],
     ['--brand', '--bg'],
     ['--push', '--bg'],
+    ['--inputbd', '--bg'],
+    ['--inputbd', '--surface'],
   ];
   it.each(graphics)('%s on %s is at least 3:1 (graphics)', (fg, bg) => {
     expect(contrast(v[fg]!, v[bg]!)).toBeGreaterThanOrEqual(3);

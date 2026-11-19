@@ -113,9 +113,22 @@ describe('summarizeBets', () => {
     expect(s.biggestLoss).toEqual({ id: 'b2', amount: -100 });
     expect(s.series.map((p) => p.cumulative)).toEqual([100, 0, 0, 0, 50]);
     expect(s.byBook.map((g) => g.key)).toEqual(['Stake', 'FanDuel']);
-    expect(s.byMonth.map((g) => [g.key, g.bets, g.net])).toEqual([
+    expect(s.byMonth.map((g) => [g.key, g.settled, g.net])).toEqual([
       ['2026-10', 1, 100],
       ['2026-11', 4, -50],
+    ]);
+  });
+
+  it('counts pending bets per group without touching staked, PnL or ROI', () => {
+    const s = summarizeBets([
+      bet({ n: 1, result: 'win', payout: 200 }),
+      bet({ n: 2 }),
+      bet({ n: 3, placedOn: '2026-12-01' }),
+    ]);
+    expect(s.byBook[0]).toMatchObject({ settled: 1, pending: 2, staked: 100, net: 100, roi: 1 });
+    expect(s.byMonth.map((g) => [g.key, g.settled, g.pending])).toEqual([
+      ['2026-11', 1, 1],
+      ['2026-12', 0, 1],
     ]);
   });
 
@@ -156,7 +169,7 @@ describe('summarizeBets', () => {
       bet({ n: 2, result: 'win', payout: 200, placedOn: '2026-11-02' }),
     ]);
     expect(s).toMatchObject({ settled: 2, voids: 1, staked: 100, returned: 200, net: 100, roi: 1 });
-    expect(s.byBook[0]).toMatchObject({ bets: 2, staked: 100, net: 100, roi: 1 });
+    expect(s.byBook[0]).toMatchObject({ settled: 2, pending: 0, staked: 100, net: 100, roi: 1 });
     const onlyVoid = summarizeBets([bet({ n: 1, result: 'void', payout: 100 })]);
     expect(onlyVoid).toMatchObject({ voids: 1, staked: 0, roi: null });
   });

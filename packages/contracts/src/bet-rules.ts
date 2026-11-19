@@ -117,7 +117,10 @@ export function outcome(b: Pick<BetLike, 'stake' | 'result' | 'payout'>): Outcom
 
 export interface GroupStats {
   key: string;
-  bets: number;
+  /** Settled bets (everything but pending); these are the only ones in staked/net/roi. */
+  settled: number;
+  /** Bets still open: counted here but never in staked, PnL or ROI. */
+  pending: number;
   staked: number;
   net: number;
   roi: number | null;
@@ -167,14 +170,22 @@ function chrono(a: BetLike, b: BetLike): number {
   return 0;
 }
 
-function group(rows: { key: string; staked: number; net: number }[]): GroupStats[] {
+function group(
+  rows: { key: string; staked: number; net: number }[],
+  open: { key: string }[],
+): GroupStats[] {
   const m = new Map<string, GroupStats>();
+  const slot = (key: string) => {
+    const g = m.get(key) ?? { key, settled: 0, pending: 0, staked: 0, net: 0, roi: null };
+    m.set(key, g);
+    return g;
+  };
+  for (const r of open) slot(r.key).pending += 1;
   for (const r of rows) {
-    const g = m.get(r.key) ?? { key: r.key, bets: 0, staked: 0, net: 0, roi: null };
-    g.bets += 1;
+    const g = slot(r.key);
+    g.settled += 1;
     g.staked = round2(g.staked + r.staked);
     g.net = round2(g.net + r.net);
-    m.set(r.key, g);
   }
   return [...m.values()].map((g) => ({ ...g, roi: g.staked > 0 ? g.net / g.staked : null }));
 }
@@ -198,6 +209,7 @@ export function summarizeBets(bets: readonly BetLike[]): BetStats {
   let biggestLoss: Extreme | null = null;
   const series: SeriesPoint[] = [];
   const rows: { book: string; month: string; staked: number; net: number }[] = [];
+  const open: { book: string; month: string }[] = [];
   const decided: Array<'win' | 'loss'> = [];
   let cumulative = 0;
 
@@ -206,6 +218,7 @@ export function summarizeBets(bets: readonly BetLike[]): BetStats {
     const p = profit(b);
     if (o === 'pending' || p === null) {
       pending += 1;
+      open.push({ book: b.book, month: b.placedOn.slice(0, 7) });
       continue;
     }
     // Void bets stay in the counts but are not money at risk: no staked/returned, so ROI ignores them.
@@ -239,8 +252,14 @@ export function summarizeBets(bets: readonly BetLike[]): BetStats {
   }
 
   const net = round2(returned - staked);
-  const byBook = group(rows.map((r) => ({ key: r.book, staked: r.staked, net: r.net })));
-  const byMonth = group(rows.map((r) => ({ key: r.month, staked: r.staked, net: r.net })));
+  const byBook = group(
+    rows.map((r) => ({ key: r.book, staked: r.staked, net: r.net })),
+    open.map((r) => ({ key: r.book })),
+  );
+  const byMonth = group(
+    rows.map((r) => ({ key: r.month, staked: r.staked, net: r.net })),
+    open.map((r) => ({ key: r.month })),
+  );
   return {
     settled: rows.length,
     pending,

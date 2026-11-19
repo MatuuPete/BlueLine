@@ -30,6 +30,7 @@ export default async function BetsPage({
         summary={summary}
         filter={{ ...filter, currency: summary.currency }}
         books={books}
+        year={String(new Date().getFullYear())}
       />
     </div>
   );

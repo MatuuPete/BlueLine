@@ -42,10 +42,13 @@ const num = (s: string): number | undefined => {
 
 export function BetForm({
   bet,
+  initialResult,
   onClose,
   onSaved,
 }: {
   bet: BetDTO | null;
+  /** Preselects the result (the Settle menu's "Cash-out…"); the bet's own result otherwise. */
+  initialResult?: BetResult;
   onClose: () => void;
   onSaved: (saved: BetDTO, created: boolean) => void;
 }) {
@@ -54,7 +57,7 @@ export function BetForm({
   const ref = useRef<HTMLDivElement>(null);
   const firstRef = useRef<HTMLInputElement>(null);
 
-  const [placedOn, setPlacedOn] = useState(bet?.placedOn ?? todayLocal());
+  const [placedOn, setPlacedOn] = useState(bet?.placedOn ?? '');
   const [book, setBook] = useState(bet?.book ?? 'Stake');
   const [sport, setSport] = useState(bet?.sport ?? 'NBA');
   const [event, setEvent] = useState(bet?.event ?? '');
@@ -65,7 +68,7 @@ export function BetForm({
   const [oddsText, setOddsText] = useState(bet ? String(bet.oddsDecimal) : '');
   const [stake, setStake] = useState(bet ? String(bet.stake) : '');
   const [currency, setCurrency] = useState(bet?.currency ?? 'PHP');
-  const [result, setResult] = useState<BetResult>(bet?.result ?? 'pending');
+  const [result, setResult] = useState<BetResult>(initialResult ?? bet?.result ?? 'pending');
   const [cashout, setCashout] = useState(
     bet?.result === 'cashout' && bet.payout !== null ? String(bet.payout) : '',
   );
@@ -73,6 +76,11 @@ export function BetForm({
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // The browser's local date is only known after mount, so a new bet's date is set here, not in render.
+  useEffect(() => {
+    if (!bet) setPlacedOn((d) => d || todayLocal());
+  }, [bet]);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
