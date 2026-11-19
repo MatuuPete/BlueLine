@@ -65,9 +65,10 @@ GRANT SELECT ON prop_current TO web_role, worker_role;
 
 -- User tables (web app only; every query filters by session.user.id).
 GRANT SELECT, INSERT, UPDATE, DELETE ON
-  users, user_settings, favorites, filter_presets, slips, slip_legs
+  users, user_settings, favorites, filter_presets, slips, slip_legs, bets
 TO web_role;
 
+-- bets: web_role only (the worker gets nothing).
 -- grade-slips reads pending legs and writes result/graded_at. Column-level UPDATE keeps
 -- the worker from rewriting a leg's line, price or owner.
 GRANT SELECT ON slip_legs TO worker_role;

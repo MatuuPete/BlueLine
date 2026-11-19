@@ -27,6 +27,12 @@ export const SlipIcon = () => (
     <path d="M9 8h6M9 12h6" />
   </svg>
 );
+export const BetsIcon = () => (
+  <svg {...base} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 17l5-6 4 4 8-9" />
+    <path d="M15 6h5v5" />
+  </svg>
+);
 export const StarIcon = () => (
   <svg {...base} strokeLinejoin="round">
     <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.8z" />

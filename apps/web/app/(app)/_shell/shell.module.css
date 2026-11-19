@@ -288,7 +288,7 @@
     bottom: 0;
     z-index: 30;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 6px 8px calc(10px + env(safe-area-inset-bottom));
     background: var(--bg);
     border-top: 1px solid var(--line);

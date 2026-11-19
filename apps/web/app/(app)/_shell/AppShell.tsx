@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import type { Theme } from '../../../lib/theme';
-import { BoardIcon, GamesIcon, GearIcon, SearchIcon, SlipIcon, StarIcon } from './icons';
+import { BetsIcon, BoardIcon, GamesIcon, GearIcon, SearchIcon, SlipIcon, StarIcon } from './icons';
 import styles from './shell.module.css';
 import { SlipDrawer } from './SlipDrawer';
 import { SlipProvider, useSlip } from './SlipContext';
@@ -15,6 +15,7 @@ const NAV = [
   { href: '/', label: 'Board' },
   { href: '/games', label: 'Games' },
   { href: '/slips', label: 'Slips' },
+  { href: '/bets', label: 'Bets' },
   { href: '/favorites', label: 'Favorites' },
 ] as const;
 
@@ -140,6 +141,7 @@ function TabBar() {
         Slip · {legs.length}
         <span className="sr-only">{legs.length === 1 ? ' leg' : ' legs'}</span>
       </button>
+      {tab('/bets', 'Bets', <BetsIcon />)}
       {tab('/favorites', 'Favorites', <StarIcon />)}
     </nav>
   );
