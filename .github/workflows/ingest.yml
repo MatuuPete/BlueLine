@@ -44,9 +44,26 @@ jobs:
       INPUT_DATE: ${{ inputs.date }}
       EVENT_SCHEDULE: ${{ github.event.schedule }}
     steps:
+      # Quiet skip until the repo secrets exist (docs/DEPLOY.md), so scheduled runs do not fail.
+      - name: Check required secrets
+        id: gate
+        env:
+          HAS_DATABASE_URL: ${{ secrets.DATABASE_URL != '' }}
+          HAS_ODDS_PROVIDER: ${{ secrets.ODDS_PROVIDER != '' }}
+        run: |
+          missing=""
+          [ "$HAS_DATABASE_URL" = "true" ] || missing="$missing DATABASE_URL"
+          [ "$HAS_ODDS_PROVIDER" = "true" ] || missing="$missing ODDS_PROVIDER"
+          if [ -n "$missing" ]; then
+            echo "::notice::Skipping ingest; missing secret(s):$missing. See docs/DEPLOY.md."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
       # Single source for the command; keep in sync with the concurrency group above.
       - name: Map schedule to job
         id: job
+        if: steps.gate.outputs.run == 'true'
         run: |
           job="$INPUT_JOB"
           if [ -z "$job" ]; then
@@ -65,15 +82,20 @@ jobs:
           echo "job=$job" >> "$GITHUB_OUTPUT"
           echo "Running job: $job"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.gate.outputs.run == 'true'
         with:
           persist-credentials: false
       - run: corepack enable
+        if: steps.gate.outputs.run == 'true'
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.gate.outputs.run == 'true'
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+        if: steps.gate.outputs.run == 'true'
       - name: Run job
+        if: steps.gate.outputs.run == 'true'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SGO_API_KEY: ${{ secrets.SGO_API_KEY }}
