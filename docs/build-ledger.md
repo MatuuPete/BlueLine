@@ -170,3 +170,5 @@ Spec: docs/superpowers/specs/2026-11-18-nba-props-app-design.md (reachable). Bra
 - 2026-11-19: user approved Bet tracker (log any bet, decimal odds, PHP default, auto payout, PnL dashboard with cumulative chart, by book/month, filters; import 6 Stake bets after deploy). Branch feat/bet-tracker.
 - 2026-11-19: user asked dark mode be grayish-black instead of navy (keep Duke Blue accents). Branch feat/dark-neutral.
 - Dark-neutral: done 4f3186a (vitest 720, e2e 21/21 incl. dark axe). Lead viewed board/detail dark shots — neutral, accents intact. Deferred minor: dark --inputbd 1.68:1 (<3:1 non-text) → bump to ~#63676E later; --miss raised to #686D75 for 3:1.
+- Bet tracker review: Fix first — Important: numeric(12,2) overflow → 500 for stake ≤1e9; no DB CHECKs. Minors: hydration date, PATCH tx, void in ROI denominator, strict query params. Fix round 1 dispatched (merge main first).
+- Bet tracker fix round 1 (5670da5) re-review: 6/6 ADDRESSED. Ruling R42: payout widened to numeric(13,2) so MAX_STAKE 1e7 × odds 1000 fits. Deferred minor: BetForm todayLocal in useState initializer; hardcoded filter key list.
