@@ -1,4 +1,5 @@
 import { PGlite } from '@electric-sql/pglite';
+import { adminFromPglite, type AdminSql } from './admin';
 import { dbFromPglite, runMigrations, type Db } from './client';
 
 // Migrating a fresh PGlite takes ~1.3s, so each test worker migrates one
@@ -21,4 +22,10 @@ function migratedTemplate(): Promise<PGlite> {
 export async function createTestDb(): Promise<Db> {
   const clone = await (await migratedTemplate()).clone();
   return dbFromPglite(clone as PGlite);
+}
+
+/** Like createTestDb(), plus a raw-SQL admin handle on the same instance (roles, grants). */
+export async function createTestDbWithAdmin(): Promise<{ db: Db; admin: AdminSql }> {
+  const clone = (await (await migratedTemplate()).clone()) as PGlite;
+  return { db: dbFromPglite(clone), admin: adminFromPglite(clone) };
 }

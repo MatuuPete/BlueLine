@@ -29,6 +29,9 @@ export const USAGE = `Usage: corepack pnpm worker <job> [options]
 Jobs:
   ${JOBS.join('\n  ')}
 
+Other commands:
+  setup:live          first-time Vercel/Neon setup (docs/DEPLOY.md; setup:live --help)
+
 Options:
   --date YYYY-MM-DD   target slate date (America/New_York)
   --days N            number of days (schedule: ahead, boxscores: back, seed: history)
@@ -83,6 +86,10 @@ export function assertSeedTarget(databaseUrl: string | undefined): void {
 }
 
 export async function main(argv: string[]): Promise<number> {
+  if (argv[0] === 'setup:live') {
+    const { main: setupLive } = await import('./setup-live');
+    return setupLive(argv.slice(1));
+  }
   if (argv.length === 0) {
     console.log(USAGE);
     return 0;

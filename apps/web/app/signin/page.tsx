@@ -1,10 +1,12 @@
-import { Button, Disclaimer, Logo } from '@blueline/ui';
+import { Disclaimer, Logo } from '@blueline/ui';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { signIn } from '../../auth';
+import { configuredProviders } from '../../lib/auth-providers';
 import { safeCallback } from '../../lib/safe-callback';
 import { getUserId } from '../../lib/session';
 import { signInErrorMessage } from '../../lib/signin-errors';
+import { ProviderButtons } from './ProviderButtons';
 import styles from './signin.module.css';
 
 export const metadata: Metadata = { title: 'Sign in · BlueLine' };
@@ -19,6 +21,7 @@ export default async function SignInPage({
   if (await getUserId()) redirect(redirectTo);
 
   const error = signInErrorMessage(params.error);
+  const providers = configuredProviders();
 
   async function google() {
     'use server';
@@ -42,16 +45,7 @@ export default async function SignInPage({
             {error}
           </p>
         ) : null}
-        <form action={google}>
-          <Button type="submit" size="lg" className={styles.button}>
-            Continue with Google
-          </Button>
-        </form>
-        <form action={github}>
-          <Button type="submit" size="lg" variant="secondary" className={styles.button}>
-            Continue with GitHub
-          </Button>
-        </form>
+        <ProviderButtons providers={providers} google={google} github={github} />
       </section>
       <Disclaimer className={styles.disclaimer} />
     </main>

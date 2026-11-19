@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "e2e": "corepack pnpm --filter @blueline/web e2e",
     "dev": "corepack pnpm --filter @blueline/web dev",
-    "worker": "corepack pnpm --filter @blueline/worker start"
+    "worker": "corepack pnpm --filter @blueline/worker start",
+    "setup:live": "corepack pnpm --filter @blueline/worker setup:live"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
