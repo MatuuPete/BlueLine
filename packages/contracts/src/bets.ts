@@ -4,6 +4,8 @@ import {
   BET_RESULTS,
   BET_TYPES,
   cashoutError,
+  MAX_PAYOUT,
+  MAX_STAKE,
   ODDS_MAX,
   ODDS_MIN,
   round2,
@@ -63,11 +65,11 @@ const shape = {
   betType: BetTypeSchema,
   legs: z.number().int().min(1).max(20),
   odds,
-  stake: z.number().positive().max(1_000_000_000),
+  stake: z.number().positive().max(MAX_STAKE),
   currency,
   result: BetResultSchema,
   /** Only read for cash-out; the server recomputes payout for every other result. */
-  payout: z.number().min(0).max(100_000_000_000).nullable(),
+  payout: z.number().min(0).max(MAX_PAYOUT).nullable(),
   notes: optText(500),
 };
 

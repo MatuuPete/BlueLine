@@ -1,6 +1,8 @@
 import {
   cashoutError,
   computePayout,
+  MAX_PAYOUT,
+  MAX_STAKE,
   primaryCurrency,
   profit,
   summarizeBets,
@@ -83,11 +85,15 @@ function resolvePayout(
   oddsDecimal: number,
   cashout: number | null | undefined,
 ): number | null {
+  if (stake > MAX_STAKE) throw new BetValidationError({ stake: ['Stake is too large'] });
   if (result === 'cashout') {
     const msg = cashoutError(stake, oddsDecimal, cashout);
     if (msg) throw new BetValidationError({ payout: [msg] });
   }
-  return computePayout({ result, stake, oddsDecimal, cashout });
+  const payout = computePayout({ result, stake, oddsDecimal, cashout });
+  if (payout !== null && payout > MAX_PAYOUT)
+    throw new BetValidationError({ payout: ['Payout is too large'] });
+  return payout;
 }
 
 const money = (n: number | null) => (n === null ? null : n.toFixed(2));
@@ -142,36 +148,45 @@ export async function updateBet(
   id: string,
   patch: BetUpdate,
 ): Promise<BetDTO | null> {
-  const cur = await getBet(db, userId, id);
-  if (!cur) return null;
-  const stake = patch.stake ?? cur.stake;
-  const oddsDecimal = patch.oddsDecimal ?? cur.oddsDecimal;
-  const result = patch.result ?? cur.result;
-  // A cash-out amount comes from the patch, or from the stored one if still a cash-out.
-  const cashout =
-    patch.payout !== undefined ? patch.payout : cur.result === 'cashout' ? cur.payout : null;
-  const payout = resolvePayout(result, stake, oddsDecimal, cashout);
-  const [r] = await db
-    .update(bets)
-    .set({
-      ...(patch.placedOn !== undefined && { placedOn: patch.placedOn }),
-      ...(patch.book !== undefined && { book: patch.book }),
-      ...(patch.sport !== undefined && { sport: patch.sport }),
-      ...(patch.event !== undefined && { event: patch.event }),
-      ...(patch.description !== undefined && { description: patch.description }),
-      ...(patch.betType !== undefined && { betType: patch.betType }),
-      ...(patch.legs !== undefined && { legs: patch.legs }),
-      ...(patch.currency !== undefined && { currency: patch.currency }),
-      ...(patch.notes !== undefined && { notes: patch.notes }),
-      oddsDecimal: oddsDecimal.toFixed(3),
-      stake: stake.toFixed(2),
-      result,
-      payout: money(payout),
-      updatedAt: new Date(),
-    })
-    .where(and(eq(bets.id, id), eq(bets.userId, userId)))
-    .returning();
-  return r ? toDTO(r) : null;
+  if (!UUID.test(id)) return null;
+  // Read, merge and write under a row lock so concurrent edits cannot interleave.
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(bets)
+      .where(and(eq(bets.id, id), eq(bets.userId, userId)))
+      .for('update');
+    if (!row) return null;
+    const cur = toDTO(row);
+    const stake = patch.stake ?? cur.stake;
+    const oddsDecimal = patch.oddsDecimal ?? cur.oddsDecimal;
+    const result = patch.result ?? cur.result;
+    // A cash-out amount comes from the patch, or from the stored one if still a cash-out.
+    const cashout =
+      patch.payout !== undefined ? patch.payout : cur.result === 'cashout' ? cur.payout : null;
+    const payout = resolvePayout(result, stake, oddsDecimal, cashout);
+    const [r] = await tx
+      .update(bets)
+      .set({
+        ...(patch.placedOn !== undefined && { placedOn: patch.placedOn }),
+        ...(patch.book !== undefined && { book: patch.book }),
+        ...(patch.sport !== undefined && { sport: patch.sport }),
+        ...(patch.event !== undefined && { event: patch.event }),
+        ...(patch.description !== undefined && { description: patch.description }),
+        ...(patch.betType !== undefined && { betType: patch.betType }),
+        ...(patch.legs !== undefined && { legs: patch.legs }),
+        ...(patch.currency !== undefined && { currency: patch.currency }),
+        ...(patch.notes !== undefined && { notes: patch.notes }),
+        oddsDecimal: oddsDecimal.toFixed(3),
+        stake: stake.toFixed(2),
+        result,
+        payout: money(payout),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(bets.id, id), eq(bets.userId, userId)))
+      .returning();
+    return r ? toDTO(r) : null;
+  });
 }
 
 /** Returns false when the bet does not exist or belongs to someone else. */

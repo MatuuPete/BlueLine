@@ -1,6 +1,6 @@
 import { BetInputSchema, type BetInput } from '@blueline/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { closeDb, users, type Db } from '../src/index';
+import { bets, closeDb, users, type Db } from '../src/index';
 import {
   BetValidationError,
   betSummary,
@@ -189,5 +189,50 @@ describe('listBooks', () => {
     await createBet(db, 'userD', input({ book: 'FanDuel' }));
     expect(await listBooks(db, 'userD')).toEqual(['FanDuel', 'Stake']);
     expect(await listBooks(db, 'nobody')).toEqual([]);
+  });
+});
+
+describe('limits and constraints', () => {
+  it('accepts the largest stake at the largest odds', async () => {
+    const b = await createBet(
+      db,
+      'userA',
+      input({ stake: 10_000_000, odds: { decimal: 1000 }, result: 'win' }),
+    );
+    expect(b.payout).toBe(10_000_000_000);
+  });
+
+  it('rejects an oversized stake at the query layer with a validation error', async () => {
+    const big = { ...input(), stake: 10_000_001 };
+    await expect(createBet(db, 'userA', big)).rejects.toBeInstanceOf(BetValidationError);
+  });
+
+  it('rejects a direct insert that breaks a CHECK constraint', async () => {
+    const base = {
+      userId: 'userA',
+      placedOn: '2026-11-18',
+      book: 'Stake',
+      description: 'x',
+      oddsDecimal: '1.900',
+      stake: '10.00',
+    };
+    const bad: Array<Record<string, unknown>> = [
+      { stake: '0' },
+      { oddsDecimal: '1.000' },
+      { oddsDecimal: '1001' },
+      { legs: 0 },
+      { legs: 21 },
+      { payout: '-1' },
+      { result: 'won' },
+      { betType: 'triple' },
+      { currency: 'php' },
+    ];
+    for (const o of bad) {
+      await expect(
+        db.insert(bets).values({ ...base, ...o } as never),
+        JSON.stringify(o),
+      ).rejects.toThrow();
+    }
+    await expect(db.insert(bets).values(base)).resolves.toBeDefined();
   });
 });

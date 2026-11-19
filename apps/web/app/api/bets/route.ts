@@ -1,14 +1,12 @@
 import { BetFilterSchema, BetInputSchema } from '@blueline/contracts';
 import { BetValidationError, createBet, listBets } from '@blueline/db/queries/bets';
 import { authed, errorResponse, json, parseBody, parseInput } from '../../../lib/api';
+import { filterParams } from '../../../lib/bets';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = authed(async ({ db, userId }, req: Request) => {
-  const parsed = parseInput(
-    BetFilterSchema,
-    Object.fromEntries(new URL(req.url).searchParams.entries()),
-  );
+  const parsed = parseInput(BetFilterSchema, filterParams(req.url));
   if ('res' in parsed) return parsed.res;
   return json(await listBets(db, userId, parsed.data));
 });

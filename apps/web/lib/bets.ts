@@ -100,3 +100,14 @@ export function formatMonth(ym: string): string {
     year: 'numeric',
   }).format(d);
 }
+
+/** The known filter params of a request URL; unknown params are ignored, not rejected. */
+export function filterParams(url: string): Record<string, string> {
+  const sp = new URL(url).searchParams;
+  const out: Record<string, string> = {};
+  for (const k of ['from', 'to', 'book', 'result', 'currency'] as const) {
+    const v = sp.get(k);
+    if (v !== null) out[k] = v;
+  }
+  return out;
+}

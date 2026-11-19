@@ -15,7 +15,7 @@ import {
 } from '@blueline/contracts';
 import { Button, Chip, EmptyState, Segmented } from '@blueline/ui';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import {
   activePreset,
   filterToQuery,
@@ -144,8 +144,10 @@ export function BetsView({
 
   const s = summary;
   const cur = s.currency;
-  const today = todayLocal();
-  const preset = activePreset(filter, today);
+  // The browser's local date is only known after mount; rendering it earlier would mismatch SSR.
+  const [today, setToday] = useState<string | null>(null);
+  useEffect(() => setToday(todayLocal()), []);
+  const preset = today ? activePreset(filter, today) : null;
   const hasFilter = Boolean(filter.from || filter.to || filter.book || filter.result);
 
   const go = (next: BetFilter) => {
@@ -314,7 +316,7 @@ export function BetsView({
                   onClick={() =>
                     go({
                       ...filter,
-                      ...presetRange(p, today),
+                      ...presetRange(p, today ?? todayLocal()),
                       ...(p === 'all' ? { from: undefined, to: undefined } : {}),
                     })
                   }

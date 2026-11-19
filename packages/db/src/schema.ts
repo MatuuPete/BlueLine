@@ -19,6 +19,7 @@ import {
   bigint,
   boolean,
   char,
+  check,
   date,
   doublePrecision,
   index,
@@ -509,7 +510,7 @@ export const bets = pgTable(
     stake: numeric('stake', { precision: 12, scale: 2 }).notNull(),
     currency: char('currency', { length: 3 }).notNull().default('PHP'),
     result: text('result').$type<BetResult>().notNull().default('pending'),
-    payout: numeric('payout', { precision: 12, scale: 2 }),
+    payout: numeric('payout', { precision: 13, scale: 2 }),
     notes: text('notes'),
     createdAt: createdAt(),
     updatedAt: tstz('updated_at').notNull().defaultNow(),
@@ -517,5 +518,15 @@ export const bets = pgTable(
   (t) => [
     index('bets_user_placed_idx').on(t.userId, t.placedOn.desc()),
     index('bets_user_result_idx').on(t.userId, t.result),
+    check('bets_stake_pos', sql`${t.stake} > 0`),
+    check('bets_odds_range', sql`${t.oddsDecimal} between 1.01 and 1000`),
+    check('bets_legs_range', sql`${t.legs} between 1 and 20`),
+    check('bets_payout_nonneg', sql`${t.payout} is null or ${t.payout} >= 0`),
+    check(
+      'bets_result_valid',
+      sql`${t.result} in ('pending', 'win', 'loss', 'push', 'void', 'cashout')`,
+    ),
+    check('bets_type_valid', sql`${t.betType} in ('single', 'parlay')`),
+    check('bets_currency_fmt', sql`${t.currency} ~ '^[A-Z]{3}$'`),
   ],
 );

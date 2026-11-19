@@ -141,4 +141,37 @@ describe('bets API', () => {
       (await (await betById.GET(get(`/api/bets/${bet.id}`), idCtx(bet.id))).json()).result,
     ).toBe('win');
   });
+
+  it('enforces money limits with 400 field errors, and accepts the maximum', async () => {
+    const big = await bets.POST(send('/api/bets', { ...body, stake: 10_000_001 }));
+    expect(big.status).toBe(400);
+    expect(Object.keys((await big.json()).fields)).toContain('stake');
+    const max = await bets.POST(
+      send('/api/bets', { ...body, stake: 10_000_000, odds: { decimal: 1000 }, result: 'win' }),
+    );
+    expect(max.status).toBe(201);
+    expect((await max.json()).payout).toBe(10_000_000_000);
+
+    const huge = await bets.POST(send('/api/bets', { ...body, result: 'cashout', payout: 1e12 }));
+    expect(huge.status).toBe(400);
+    expect(Object.keys((await huge.json()).fields)).toContain('payout');
+    const bet = await (await bets.POST(send('/api/bets', body))).json();
+    const patch = await betById.PATCH(
+      send('/api/bets/' + bet.id, { result: 'cashout', payout: 1e12 }, 'PATCH'),
+      idCtx(bet.id),
+    );
+    expect(patch.status).toBe(400);
+    expect(Object.keys((await patch.json()).fields)).toContain('payout');
+    const stakePatch = await betById.PATCH(
+      send('/api/bets/' + bet.id, { stake: 1e9 }, 'PATCH'),
+      idCtx(bet.id),
+    );
+    expect(stakePatch.status).toBe(400);
+  });
+
+  it('ignores unknown query params but still validates known ones', async () => {
+    expect((await bets.GET(get('/api/bets?utm_source=x&_rsc=1'))).status).toBe(200);
+    expect((await summary.GET(get('/api/bets/summary?utm_source=x'))).status).toBe(200);
+    expect((await bets.GET(get('/api/bets?utm_source=x&from=nope'))).status).toBe(400);
+  });
 });

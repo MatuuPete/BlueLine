@@ -14,7 +14,7 @@ Press **Log a bet**. Fields:
 | Bet | What you took, e.g. "Over 61.5 · 3rd Quarter Total" (160 characters) |
 | Single / Parlay, Legs | Parlays have 2–20 legs |
 | Odds | Decimal by default. Switch to American (+150, −120) and it is converted (+150 is 2.50, −120 is 1.833). The list shows decimal first and American beneath |
-| Stake, Currency | PHP by default; PHP, USD, EUR, GBP, AUD, CAD |
+| Stake, Currency | Stake up to 10,000,000. PHP by default; PHP, USD, EUR, GBP, AUD, CAD |
 | Result | Pending, Win, Loss, Push, Void or Cash-out |
 | Payout | Calculated. Only editable for a cash-out |
 | Notes | Optional |
@@ -29,7 +29,7 @@ Pending bets have **Settle** buttons (Win, Loss, Push, Void) in the list. Use **
 - The server always recomputes the payout from the result, stake and odds. A payout sent for anything but a cash-out is ignored.
 - Profit = payout − stake. Pending bets are left out of every total.
 - Push and void count as 0 profit and are left out of the win rate. A cash-out counts as a win if it returned more than the stake, a loss if less, a push if equal.
-- Win rate = wins ÷ (wins + losses). ROI = net PnL ÷ total staked (shown as "—" when nothing is staked yet).
+- Win rate = wins ÷ (wins + losses). ROI = net PnL ÷ total staked (shown as "—" when nothing is staked yet). Void bets are kept in the bet counts but left out of total staked and total returned, so they never dilute ROI; pushes still count their stake.
 - The streak counts the latest run of wins or losses; pushes and voids are skipped.
 - Summaries are per currency and never added across currencies. The page shows your most-used currency (PHP on a tie) and a switcher appears when you have more than one.
 
@@ -43,7 +43,7 @@ All routes need a signed-in session, are scoped to you (another user's id answer
 
 | Route | Purpose |
 | --- | --- |
-| `GET /api/bets?from&to&book&result&currency` | List, newest first |
+| `GET /api/bets?from&to&book&result&currency` | List, newest first (unknown query parameters are ignored) |
 | `POST /api/bets` | Create. Odds as `{ "decimal": 1.8 }` or `{ "american": -120 }`; 400 with per-field errors |
 | `GET` / `PATCH` / `DELETE /api/bets/{id}` | Read, partial update (payout recomputed), delete |
 | `GET /api/bets/summary?…` | Summary for one currency, with the list of currencies in use |

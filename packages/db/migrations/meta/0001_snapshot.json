@@ -1,5 +1,5 @@
 {
-  "id": "65bc8d8c-d1e8-4fa2-b368-a30a4ae0d110",
+  "id": "6a36f3be-23a7-4b7b-a2de-ec1a4c12d755",
   "prevId": "d814b85b-b5db-4938-a183-d2b6d30e5a67",
   "version": "7",
   "dialect": "postgresql",
@@ -134,7 +134,7 @@
         },
         "payout": {
           "name": "payout",
-          "type": "numeric(12, 2)",
+          "type": "numeric(13, 2)",
           "primaryKey": false,
           "notNull": false
         },
@@ -221,7 +221,36 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "bets_stake_pos": {
+          "name": "bets_stake_pos",
+          "value": "\"bets\".\"stake\" > 0"
+        },
+        "bets_odds_range": {
+          "name": "bets_odds_range",
+          "value": "\"bets\".\"odds_decimal\" between 1.01 and 1000"
+        },
+        "bets_legs_range": {
+          "name": "bets_legs_range",
+          "value": "\"bets\".\"legs\" between 1 and 20"
+        },
+        "bets_payout_nonneg": {
+          "name": "bets_payout_nonneg",
+          "value": "\"bets\".\"payout\" is null or \"bets\".\"payout\" >= 0"
+        },
+        "bets_result_valid": {
+          "name": "bets_result_valid",
+          "value": "\"bets\".\"result\" in ('pending', 'win', 'loss', 'push', 'void', 'cashout')"
+        },
+        "bets_type_valid": {
+          "name": "bets_type_valid",
+          "value": "\"bets\".\"bet_type\" in ('single', 'parlay')"
+        },
+        "bets_currency_fmt": {
+          "name": "bets_currency_fmt",
+          "value": "\"bets\".\"currency\" ~ '^[A-Z]{3}$'"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.favorites": {

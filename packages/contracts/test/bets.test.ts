@@ -103,10 +103,10 @@ describe('summarizeBets', () => {
     expect(s.settled).toBe(5);
     expect(s.pending).toBe(1);
     expect([s.wins, s.losses, s.pushes, s.voids]).toEqual([2, 1, 1, 1]);
-    expect(s.staked).toBe(500);
-    expect(s.returned).toBe(550);
+    expect(s.staked).toBe(400); // void is not at risk
+    expect(s.returned).toBe(450);
     expect(s.net).toBe(50);
-    expect(s.roi).toBeCloseTo(0.1);
+    expect(s.roi).toBeCloseTo(0.125);
     expect(s.winRate).toBeCloseTo(2 / 3);
     expect(s.avgOdds).toBe(2);
     expect(s.biggestWin).toEqual({ id: 'b1', amount: 100 });
@@ -148,6 +148,17 @@ describe('summarizeBets', () => {
     expect(s.winRate).toBeNull();
     expect(s.roi).toBe(0);
     expect(summarizeBets([bet({ n: 1 })]).roi).toBeNull();
+  });
+
+  it('leaves void bets out of staked, returned and ROI but keeps them in counts', () => {
+    const s = summarizeBets([
+      bet({ n: 1, result: 'void', payout: 100 }),
+      bet({ n: 2, result: 'win', payout: 200, placedOn: '2026-11-02' }),
+    ]);
+    expect(s).toMatchObject({ settled: 2, voids: 1, staked: 100, returned: 200, net: 100, roi: 1 });
+    expect(s.byBook[0]).toMatchObject({ bets: 2, staked: 100, net: 100, roi: 1 });
+    const onlyVoid = summarizeBets([bet({ n: 1, result: 'void', payout: 100 })]);
+    expect(onlyVoid).toMatchObject({ voids: 1, staked: 0, roi: null });
   });
 
   it('keeps currencies apart', () => {
@@ -235,6 +246,8 @@ describe('BetInputSchema', () => {
       { ...valid, result: 'won' },
       { ...valid, result: 'cashout' },
       { ...valid, result: 'cashout', payout: 999 },
+      { ...valid, stake: 10_000_001 },
+      { ...valid, result: 'cashout', payout: 1e12 },
     ]) {
       expect(BetInputSchema.safeParse(bad).success, JSON.stringify(bad)).toBe(false);
     }

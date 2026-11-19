@@ -9,6 +9,10 @@ export type BetType = (typeof BET_TYPES)[number];
 
 export const ODDS_MIN = 1.01;
 export const ODDS_MAX = 1000;
+/** Largest stake (so stake x ODDS_MAX stays inside the payout column). */
+export const MAX_STAKE = 10_000_000;
+/** payout is numeric(13,2). */
+export const MAX_PAYOUT = 99_999_999_999.99;
 
 /** Typographic minus, used for every negative number we print. */
 const MINUS = '−';
@@ -74,6 +78,7 @@ export function cashoutError(stake: number, oddsDecimal: number, cashout: unknow
   if (typeof cashout !== 'number' || !Number.isFinite(cashout))
     return 'Enter the cash-out amount you received';
   if (cashout < 0) return 'Cash-out cannot be negative';
+  if (cashout > MAX_PAYOUT) return 'Cash-out is too large';
   if (cashout > winPayout(stake, oddsDecimal)) return 'Cash-out cannot be more than stake × odds';
   return null;
 }
@@ -203,11 +208,13 @@ export function summarizeBets(bets: readonly BetLike[]): BetStats {
       pending += 1;
       continue;
     }
-    staked = round2(staked + b.stake);
-    returned = round2(returned + (b.payout ?? 0));
+    // Void bets stay in the counts but are not money at risk: no staked/returned, so ROI ignores them.
+    const atRisk = o === 'void' ? 0 : b.stake;
+    staked = round2(staked + atRisk);
+    returned = round2(returned + (o === 'void' ? 0 : (b.payout ?? 0)));
     cumulative = round2(cumulative + p);
     series.push({ id: b.id ?? null, date: b.placedOn, pnl: p, cumulative });
-    rows.push({ book: b.book, month: b.placedOn.slice(0, 7), staked: b.stake, net: p });
+    rows.push({ book: b.book, month: b.placedOn.slice(0, 7), staked: atRisk, net: p });
     if (o === 'win') wins += 1;
     else if (o === 'loss') losses += 1;
     else if (o === 'push') pushes += 1;
