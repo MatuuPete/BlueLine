@@ -11,7 +11,9 @@ function set(value: string | undefined): boolean {
   return (value?.trim() ?? '').length > 0;
 }
 
-export function configuredProviders(env: Record<string, string | undefined> = process.env): ConfiguredProviders {
+export function configuredProviders(
+  env: Record<string, string | undefined> = process.env,
+): ConfiguredProviders {
   return {
     github: set(env.AUTH_GITHUB_ID) && set(env.AUTH_GITHUB_SECRET),
     google: set(env.AUTH_GOOGLE_ID) && set(env.AUTH_GOOGLE_SECRET),

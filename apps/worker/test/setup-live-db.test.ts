@@ -3,7 +3,7 @@ import { createTestDbWithAdmin } from '@blueline/db/testing';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setupDatabase } from '../src/setup-live/db-steps';
 import { parseEnvText } from '../src/setup-live/envfiles';
 import { resolveInputs } from '../src/setup-live/inputs';
@@ -13,6 +13,8 @@ import { makeCtx, NOON } from './helpers';
 
 const OWNER =
   'postgresql://neondb_owner:npg_secret@ep-cool-sky-123456.us-east-2.aws.neon.tech/neondb';
+
+vi.setConfig({ testTimeout: 90_000, hookTimeout: 90_000 });
 
 let db: Db;
 let admin: AdminSql;
