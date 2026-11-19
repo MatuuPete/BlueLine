@@ -4,6 +4,13 @@ import * as schema from './schema';
 export { schema };
 export * from './schema';
 export {
+  adminFromPglite,
+  connectAdminPg,
+  readRolesSql,
+  ROLES_SQL_PATH,
+  type AdminSql,
+} from './admin';
+export {
   closeDb,
   createDb,
   MIGRATIONS_FOLDER,

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "tsx src/cli.ts",
+    "setup:live": "tsx src/cli.ts setup:live",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests"
