@@ -1,0 +1,192 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+}
+
+.dialog {
+  position: relative;
+  width: min(600px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 22px 22px;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--cardShadow);
+}
+
+.dialog:focus {
+  outline: none;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--heading);
+}
+
+.close {
+  width: var(--target);
+  height: var(--target);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-input);
+  background: transparent;
+  color: var(--muted);
+}
+
+.close:hover {
+  background: var(--hoverBg);
+  color: var(--ink);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field label,
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.labelRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.mini {
+  min-width: 150px;
+  flex: 1 1 150px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  min-height: var(--target);
+  padding: 0 12px;
+  border: 1px solid var(--inputbd);
+  border-radius: var(--radius-input);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  min-width: 0;
+}
+
+.field textarea {
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.field input:read-only {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.field input:disabled {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.field [aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.err {
+  margin: 0;
+  font-size: 13px;
+  color: var(--dangerFg);
+}
+
+.preview {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.previewLabel {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pos {
+  color: var(--brandText);
+}
+
+.neg {
+  color: var(--signal);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 639px) {
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dialog {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    padding: 16px 16px 20px;
+  }
+
+  .grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

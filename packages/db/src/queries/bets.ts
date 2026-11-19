@@ -209,3 +209,13 @@ export async function betSummary(
   const stats = summarizeBets(rows.filter((r) => r.currency === currency));
   return { ...stats, currency, currencies };
 }
+
+/** Distinct book names the user has logged (for the filter dropdown). */
+export async function listBooks(db: Db, userId: string): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ book: bets.book })
+    .from(bets)
+    .where(eq(bets.userId, userId))
+    .orderBy(asc(bets.book));
+  return rows.map((r) => r.book);
+}

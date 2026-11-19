@@ -1,0 +1,115 @@
+.figure {
+  margin: 0;
+}
+
+.wrap {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-input);
+  touch-action: pan-y;
+}
+
+.svg {
+  display: block;
+  max-width: 100%;
+}
+
+.grid {
+  stroke: var(--line2);
+  stroke-width: 1;
+}
+
+.zero {
+  stroke: var(--rule);
+  stroke-width: 1.5;
+}
+
+.tick {
+  fill: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  fill: none;
+  stroke: var(--brandText);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.areaPos {
+  fill: var(--brandText);
+  fill-opacity: 0.14;
+}
+
+.areaNeg {
+  fill: var(--signal);
+  fill-opacity: 0.16;
+}
+
+.dot {
+  fill: var(--brandText);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.dotActive {
+  fill: var(--brandText);
+  stroke: var(--bg);
+  stroke-width: 2.5;
+}
+
+.cursor {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.tip {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: var(--cardShadow);
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tipDate {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.tipRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tipRow strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.wrap:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

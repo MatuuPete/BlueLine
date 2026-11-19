@@ -8,6 +8,7 @@ import {
   deleteBet,
   getBet,
   listBets,
+  listBooks,
   updateBet,
 } from '../src/queries/bets';
 import { createTestDb } from '../src/testing';
@@ -177,5 +178,16 @@ describe('list and summary', () => {
     expect((await betSummary(db, u, { from: '2026-11-03', to: '2026-11-03' })).currency).toBe(
       'USD',
     );
+  });
+});
+
+describe('listBooks', () => {
+  it('returns the distinct books of one user only', async () => {
+    await db.insert(users).values({ id: 'userD', email: 'd@example.com' });
+    await createBet(db, 'userD', input({ book: 'Stake' }));
+    await createBet(db, 'userD', input({ book: 'Stake' }));
+    await createBet(db, 'userD', input({ book: 'FanDuel' }));
+    expect(await listBooks(db, 'userD')).toEqual(['FanDuel', 'Stake']);
+    expect(await listBooks(db, 'nobody')).toEqual([]);
   });
 });
