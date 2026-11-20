@@ -1,5 +1,4 @@
 import { PropDetailParamsSchema, type Side } from '@blueline/contracts';
-import { slateDate } from '@blueline/db/queries/board';
 import { getPropDetail } from '@blueline/db/queries/detail';
 import { getSettings, listFavorites } from '@blueline/db/queries/user';
 import type { Metadata } from 'next';
@@ -53,7 +52,6 @@ export default async function PropDetailPage({
       favoriteKeys={favorites.map(favKey)}
       books={settings.books}
       oddsFormat={settings.oddsFormat}
-      today={slateDate(new Date())}
     />
   );
 }

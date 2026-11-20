@@ -41,7 +41,7 @@ import {
   type SplitContext,
 } from '../../../../../lib/detail-splits';
 import { formatOdds, type OddsFormat } from '../../../../../lib/odds-format';
-import { dateTimeET, monogram, shortDate, tipTimeET } from '../../../../../lib/time';
+import { dateTime, dayOf, monogram, shortDate, tipTime } from '../../../../../lib/time';
 import { useSlip } from '../../../_shell/SlipContext';
 import { useFavorites } from '../../../_board/useFavorites';
 import styles from './detail.module.css';
@@ -114,14 +114,12 @@ export function PropDetailView({
   favoriteKeys,
   books,
   oddsFormat,
-  today,
 }: {
   detail: PropDetail;
   initialSide: Side;
   favoriteKeys: string[];
   books: Book[];
   oddsFormat: OddsFormat;
-  today: string;
 }) {
   const { player, game, market, logs, shop, teammates, injuries, matchup, lineMoves } = detail;
   const isHome = game.home.id === player.teamId;
@@ -205,7 +203,7 @@ export function PropDetailView({
   const tipLabel =
     game.status === 'final'
       ? `Final ${game.away.abbr} ${game.away.score ?? 0}–${game.home.abbr} ${game.home.score ?? 0}`
-      : `${game.date === today ? 'Tonight' : shortDate(game.date)} ${tipTimeET(game.tipAt)}`;
+      : `${dayOf(game.tipAt)} ${tipTime(game.tipAt)}`;
   const rest =
     board?.restDays === null || board?.restDays === undefined
       ? null
@@ -697,7 +695,7 @@ export function PropDetailView({
                     return (
                       <li key={`${m.book}:${m.capturedAt}:${i}`} className={styles.move}>
                         <span className={styles.muted}>
-                          {dateTimeET(m.capturedAt)} · {BOOK_SHORT[m.book]}
+                          {dateTime(m.capturedAt)} · {BOOK_SHORT[m.book]}
                         </span>
                         <span className={styles.mono}>{formatLine(m.line)}</span>
                         <span className={`${styles.mono} ${styles.muted}`}>

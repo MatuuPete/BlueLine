@@ -1,8 +1,12 @@
-// Display helpers. Slate dates are YYYY-MM-DD in America/New_York; times print in ET.
-// None of these throw: bad input comes back unchanged (dates) or as '' (timestamps).
+// Display helpers. Slate dates are YYYY-MM-DD on the NBA's Eastern calendar (a slate is
+// "Thursday's games" no matter where you watch from), but clock times and instants print in
+// the viewer's zone, Philippine time. None of these throw: bad input comes back unchanged
+// (dates) or as '' (timestamps).
 import { isCalendarDate } from '@blueline/contracts';
 
-const TZ = 'America/New_York';
+const TZ = 'Asia/Manila';
+/** Suffix printed after clock times. */
+export const TZ_LABEL = 'PHT';
 
 /** A real calendar date in YYYY-MM-DD form (rejects 2026-02-30). */
 export function validYmd(ymd: string): boolean {
@@ -20,10 +24,16 @@ const tipFmt = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
 });
 
-/** "7:30 PM ET". */
-export function tipTimeET(iso: string): string {
+/** "8:30 AM PHT". */
+export function tipTime(iso: string): string {
   const d = validInstant(iso);
-  return d ? `${tipFmt.format(d)} ET` : '';
+  return d ? `${tipFmt.format(d)} ${TZ_LABEL}` : '';
+}
+
+/** "8:30 AM": tipTime without the zone suffix. */
+export function tipTimeBare(iso: string): string {
+  const d = validInstant(iso);
+  return d ? tipFmt.format(d) : '';
 }
 
 const clockFmt = new Intl.DateTimeFormat('en-US', {
@@ -33,8 +43,8 @@ const clockFmt = new Intl.DateTimeFormat('en-US', {
   hour12: true,
 });
 
-/** "7:30" (Eastern, no AM/PM): the intro's mono slate line. */
-export function tipClockET(iso: string): string {
+/** "8:30" (Philippine time, no AM/PM): the intro's mono slate line. */
+export function tipClock(iso: string): string {
   const d = validInstant(iso);
   if (!d) return '';
   return clockFmt
@@ -45,18 +55,18 @@ export function tipClockET(iso: string): string {
     .trim();
 }
 
-const dayEtFmt = new Intl.DateTimeFormat('en-US', { timeZone: TZ, month: 'short', day: 'numeric' });
+const dayFmt = new Intl.DateTimeFormat('en-US', { timeZone: TZ, month: 'short', day: 'numeric' });
 
-/** "Nov 18": the Eastern calendar day of an instant. */
-export function dayET(iso: string): string {
+/** "Nov 19": the Philippine calendar day of an instant. */
+export function dayOf(iso: string): string {
   const d = validInstant(iso);
-  return d ? dayEtFmt.format(d) : '';
+  return d ? dayFmt.format(d) : '';
 }
 
-/** "Nov 18 8:30 PM": Eastern day and time of an instant (no zone suffix). */
-export function dateTimeET(iso: string): string {
+/** "Nov 19 9:30 AM": Philippine day and time of an instant (no zone suffix). */
+export function dateTime(iso: string): string {
   const d = validInstant(iso);
-  return d ? `${dayEtFmt.format(d)} ${tipFmt.format(d)}` : '';
+  return d ? `${dayFmt.format(d)} ${tipFmt.format(d)}` : '';
 }
 
 /** A YYYY-MM-DD date at noon UTC, so formatting in UTC never shifts the day. */

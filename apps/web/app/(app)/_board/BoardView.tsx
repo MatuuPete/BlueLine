@@ -15,7 +15,7 @@ import { useId, useState, useTransition } from 'react';
 import { activeFilterCount } from '../../../lib/board-filter-url';
 import { resetFilter } from '../../../lib/board-presets';
 import { gameLine, gameStatus } from '../../../lib/game-format';
-import { slateLabel, tipTimeET } from '../../../lib/time';
+import { slateLabel, tipTimeBare } from '../../../lib/time';
 import { useBoardFilter } from '../../../lib/use-board-filter';
 import { FilterRail } from '../_components/FilterRail';
 import { FilterSheet } from '../_components/FilterSheet';
@@ -159,7 +159,7 @@ export function BoardView({
                   <span className={styles.gameTitle}>
                     {g.away.abbr} @ {g.home.abbr}
                   </span>
-                  <span className={styles.gameTip}>{tipTimeET(g.tipAt).replace(' ET', '')}</span>
+                  <span className={styles.gameTip}>{tipTimeBare(g.tipAt)}</span>
                 </span>
                 <span className={styles.gameOdds}>{gameOdds(g)}</span>
               </button>

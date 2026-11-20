@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 import { getDb } from '../../../lib/db';
 import { getUserId } from '../../../lib/session';
 import { parseTheme, THEME_COOKIE } from '../../../lib/theme';
-import { tipClockET } from '../../../lib/time';
+import { tipClock } from '../../../lib/time';
 import { WelcomeScene } from './WelcomeScene';
 
 export const metadata: Metadata = { title: 'Welcome' };
@@ -16,7 +16,7 @@ function slateText(games: GameSummary[]): string | undefined {
   if (games.length === 0) return undefined;
   const parts = games
     .slice(0, 6)
-    .map((g) => `${g.away.abbr} @ ${g.home.abbr} ${tipClockET(g.tipAt)}`);
+    .map((g) => `${g.away.abbr} @ ${g.home.abbr} ${tipClock(g.tipAt)}`);
   const more = games.length > 6 ? ` · +${games.length - 6} more` : '';
   return `Tonight · ${parts.join(' · ')}${more}`;
 }

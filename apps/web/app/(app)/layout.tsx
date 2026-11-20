@@ -4,17 +4,17 @@ import type { ReactNode } from 'react';
 import { getDb } from '../../lib/db';
 import { requireUserId } from '../../lib/require-user';
 import { parseTheme, THEME_COOKIE } from '../../lib/theme';
-import { tipTimeET } from '../../lib/time';
+import { tipTime } from '../../lib/time';
 import { AppShell } from './_shell/AppShell';
 
 export const dynamic = 'force-dynamic';
 
-/** "Lines updated 5:42 PM ET": the newest precompute run, or nothing. */
+/** "Lines updated 5:42 PM PHT": the newest precompute run, or nothing. */
 async function updatedText(): Promise<string | null> {
   try {
     const db = await getDb();
     const [row] = await db.select({ at: max(propMetrics.computedAt) }).from(propMetrics);
-    return row?.at ? `Lines updated ${tipTimeET(new Date(row.at).toISOString())}` : null;
+    return row?.at ? `Lines updated ${tipTime(new Date(row.at).toISOString())}` : null;
   } catch {
     return null;
   }
