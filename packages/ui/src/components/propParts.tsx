@@ -3,7 +3,9 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { PropRow, Window } from '@blueline/contracts';
 import { MARKET_LABELS } from '@blueline/contracts';
-import { cx, formatLine, injuryBadge, SIDE_LETTER, shortName } from '../format';
+import { cx, formatLine, injuryBadge, monogram, SIDE_LETTER, shortName } from '../format';
+import { headshotUrl } from '../images';
+import { Avatar } from './Avatar';
 import { Badge } from './Badge';
 import styles from './propParts.module.css';
 
@@ -39,6 +41,19 @@ export function teammateOutText(row: PropRow): string | null {
   const first = shortName(row.teammatesOut[0]!.name);
   const more = row.teammatesOut.length - 1;
   return `${first}${more > 0 ? ` +${more}` : ''} out`;
+}
+
+/** Round player headshot, or the monogram when ESPN has none. */
+export function PlayerHeadshot({
+  row,
+  size,
+}: {
+  row: Pick<PropRow, 'playerId' | 'playerName'>;
+  size: number;
+}) {
+  return (
+    <Avatar src={headshotUrl(row.playerId, size)} fallback={monogram(row.playerName)} size={size} />
+  );
 }
 
 export function PlayerName({

@@ -82,3 +82,16 @@ export function shortName(name: string): string {
   if (parts.length < 2) return name;
   return `${parts[0]!.charAt(0)}. ${parts.slice(1).join(' ')}`;
 }
+
+const NAME_SUFFIXES = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v']);
+
+/** Monogram for a player without a headshot: first and last name initials ("Marcus Dell" → "MD"). */
+export function monogram(name: string): string {
+  const words = name
+    .trim()
+    .split(/[\s-]+/)
+    .filter((w) => w && !NAME_SUFFIXES.has(w.toLowerCase()));
+  if (words.length === 0) return '?';
+  if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase();
+  return (words[0]!.charAt(0) + words[words.length - 1]!.charAt(0)).toUpperCase();
+}

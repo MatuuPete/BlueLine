@@ -2,14 +2,14 @@ import type { Metadata } from 'next';
 import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
 import { loadStatus } from '../../../lib/status-data';
-import { dateTimeET } from '../../../lib/time';
+import { dateTime, TZ_LABEL } from '../../../lib/time';
 import styles from '../_ui/page.module.css';
 import own from './status.module.css';
 
 export const metadata: Metadata = { title: 'Data status' };
 export const dynamic = 'force-dynamic';
 
-const when = (iso: string) => `${dateTimeET(iso)} ET`;
+const when = (iso: string) => `${dateTime(iso)} ${TZ_LABEL}`;
 const RESULT = { ok: 'OK', error: 'Error', running: 'Running' } as const;
 
 /** Job health, odds budget and table sizes (read-only). */

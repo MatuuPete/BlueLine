@@ -8,6 +8,7 @@ import { HeatCell } from './HeatCell';
 import { HitStrip } from './HitStrip';
 import {
   FavoriteButton,
+  PlayerHeadshot,
   PlayerName,
   playerMeta,
   propTitle,
@@ -40,6 +41,7 @@ export function PropCard({
     >
       <div className={styles.top}>
         <FavoriteButton row={row} favorite={favorite} onToggle={onToggleFavorite} />
+        <PlayerHeadshot row={row} size={40} />
         <div className={styles.who}>
           <PlayerName row={row} href={href} linkComponent={linkComponent} className={styles.name} />
           <span className={styles.meta}>{playerMeta(row)}</span>

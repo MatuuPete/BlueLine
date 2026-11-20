@@ -3,6 +3,7 @@
 // Fonts: import from '@blueline/ui/fonts' (next/font loaders; kept out of this barrel so the
 // components stay importable outside Next, e.g. in tests).
 
+export { Avatar, TeamLogo, type AvatarProps } from './components/Avatar';
 export { Badge, type BadgeProps } from './components/Badge';
 export { Button, buttonClassName, type ButtonProps } from './components/Button';
 export { Chip, type ChipProps } from './components/Chip';
@@ -36,6 +37,8 @@ export {
   formatSigned,
   HEAT_WINDOWS,
   MINUS,
+  monogram,
   ordinal,
   TIER_LABELS,
 } from './format';
+export { headshotUrl, IMAGE_ORIGIN, teamLogoUrl } from './images';

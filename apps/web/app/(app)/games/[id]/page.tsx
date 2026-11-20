@@ -14,6 +14,7 @@ import { safeDecode } from '../../../../lib/safe-decode';
 import { slateLabel } from '../../../../lib/time';
 import { PropList } from '../../_board/PropList';
 import { favKey } from '../../../../lib/fav-key';
+import { Matchup } from '../../../_ui/Matchup';
 import styles from '../../_ui/page.module.css';
 
 export const metadata: Metadata = { title: 'Game' };
@@ -47,7 +48,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
       <div className={styles.head}>
         <div className={styles.titleBlock}>
           <h1 className={styles.h1}>
-            {game.away.abbr} @ {game.home.abbr}
+            <Matchup away={game.away} home={game.home} logoSize={44} />
           </h1>
           <p className={styles.sub}>
             {game.away.name} at {game.home.name} · {slateLabel(game.date)} · {gameStatus(game)}

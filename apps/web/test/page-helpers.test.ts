@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { filterFromRecord } from '../lib/board-params';
 import { shouldShowIntro } from '../lib/intro';
 import { parseTheme, themeCookie, THEME_SCRIPT } from '../lib/theme';
-import { monogram, shortDate, slateLabel, tipClockET, tipTimeET } from '../lib/time';
+import { shortDate, slateLabel, tipClock, tipTime, tipTimeBare } from '../lib/time';
 
 describe('filterFromRecord (R11 for server pages)', () => {
   it('strips unknown keys and parses known ones', () => {
@@ -48,21 +48,18 @@ describe('theme cookie', () => {
   });
 });
 
-describe('time and name helpers', () => {
-  it('tip time in Eastern', () => {
-    expect(tipTimeET('2026-11-19T00:30:00.000Z')).toBe('7:30 PM ET');
+describe('time helpers', () => {
+  it('tip time in Philippine time', () => {
+    // 7:30 PM ET on Nov 18 is 8:30 AM on Nov 19 in Manila.
+    expect(tipTime('2026-11-19T00:30:00.000Z')).toBe('8:30 AM PHT');
+    expect(tipTimeBare('2026-11-19T00:30:00.000Z')).toBe('8:30 AM');
   });
   it('clock time for the intro slate', () => {
-    expect(tipClockET('2026-11-19T00:30:00.000Z')).toBe('7:30');
+    expect(tipClock('2026-11-19T00:30:00.000Z')).toBe('8:30');
   });
   it('short and long dates from YYYY-MM-DD', () => {
     expect(shortDate('2026-11-16')).toBe('Nov 16');
     expect(slateLabel('2026-11-18')).toBe('Wednesday, November 18');
-  });
-  it('monograms', () => {
-    expect(monogram('Marcus Dell')).toBe('MD');
-    expect(monogram('Nene')).toBe('NE');
-    expect(monogram('Karl-Anthony Towns Jr.')).toBe('KT');
   });
 });
 
@@ -72,17 +69,17 @@ describe('time helpers never throw on bad input', () => {
     expect(t.slateLabel('2026-13-01')).toBe('2026-13-01');
     expect(t.shortDate('2026-02-30')).toBe('2026-02-30');
     expect(t.addDaysYmd('nope', 1)).toBe('nope');
-    expect(t.tipTimeET('not-a-date')).toBe('');
-    expect(t.tipClockET('not-a-date')).toBe('');
+    expect(t.tipTime('not-a-date')).toBe('');
+    expect(t.tipClock('not-a-date')).toBe('');
     expect(t.validYmd('2026-02-30')).toBe(false);
     expect(t.validYmd('2026-11-18')).toBe(true);
   });
-  it('ET calendar day from an ISO timestamp', async () => {
+  it('Philippine calendar day from an ISO timestamp', async () => {
     const t = await import('../lib/time');
-    // 01:30 UTC on Nov 19 is still Nov 18 in New York.
-    expect(t.dateTimeET('2026-11-19T01:30:00.000Z')).toBe('Nov 18 8:30 PM');
-    expect(t.dateTimeET('garbage')).toBe('');
-    expect(t.dayET('2026-11-19T01:30:00.000Z')).toBe('Nov 18');
+    // 01:30 UTC on Nov 19 is 9:30 AM on Nov 19 in Manila (still Nov 18 in New York).
+    expect(t.dateTime('2026-11-19T01:30:00.000Z')).toBe('Nov 19 9:30 AM');
+    expect(t.dateTime('garbage')).toBe('');
+    expect(t.dayOf('2026-11-19T01:30:00.000Z')).toBe('Nov 19');
   });
 });
 

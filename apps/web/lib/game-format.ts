@@ -1,6 +1,6 @@
 import type { GameSummary } from '@blueline/contracts';
 import { MINUS } from '@blueline/ui';
-import { tipTimeET } from './time';
+import { tipTime } from './time';
 
 /** "NYK −3.5 · O/U 224.5" (spread is the home team's). Empty when no game line yet. */
 export function gameLine(g: GameSummary): string {
@@ -18,6 +18,6 @@ export function gameStatus(g: GameSummary): string {
   const score = `${g.away.abbr} ${g.away.score ?? 0}, ${g.home.abbr} ${g.home.score ?? 0}`;
   if (g.status === 'final') return `Final · ${score}`;
   if (g.status === 'in_progress') return `Live · ${score}`;
-  if (g.status === 'scheduled') return tipTimeET(g.tipAt);
+  if (g.status === 'scheduled') return tipTime(g.tipAt);
   return g.status.charAt(0).toUpperCase() + g.status.slice(1);
 }

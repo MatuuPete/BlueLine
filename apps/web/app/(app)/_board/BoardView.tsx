@@ -15,11 +15,12 @@ import { useId, useState, useTransition } from 'react';
 import { activeFilterCount } from '../../../lib/board-filter-url';
 import { resetFilter } from '../../../lib/board-presets';
 import { gameLine, gameStatus } from '../../../lib/game-format';
-import { slateLabel, tipTimeET } from '../../../lib/time';
+import { slateLabel, tipTimeBare } from '../../../lib/time';
 import { useBoardFilter } from '../../../lib/use-board-filter';
 import { FilterRail } from '../_components/FilterRail';
 import { FilterSheet } from '../_components/FilterSheet';
 import { QuickFilters } from '../_components/QuickFilters';
+import { Matchup } from '../../_ui/Matchup';
 import styles from './board.module.css';
 import { BoardRows } from './BoardRows';
 import { PresetDialog } from './PresetDialog';
@@ -156,10 +157,8 @@ export function BoardView({
                 onClick={() => setFilter({ ...filter, games: on ? [] : [g.id] })}
               >
                 <span className={styles.gameLine}>
-                  <span className={styles.gameTitle}>
-                    {g.away.abbr} @ {g.home.abbr}
-                  </span>
-                  <span className={styles.gameTip}>{tipTimeET(g.tipAt).replace(' ET', '')}</span>
+                  <Matchup away={g.away} home={g.home} logoSize={18} className={styles.gameTitle} />
+                  <span className={styles.gameTip}>{tipTimeBare(g.tipAt)}</span>
                 </span>
                 <span className={styles.gameOdds}>{gameOdds(g)}</span>
               </button>

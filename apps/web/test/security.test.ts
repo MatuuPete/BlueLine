@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { describe, expect, it } from 'vitest';
 import { buildCsp, createNonce, isPublicPath, securityHeaders } from '../lib/security';
 import { gate } from '../lib/gate';
+import { IMAGE_ORIGIN } from '@blueline/ui';
 
 const directives = (csp: string) =>
   Object.fromEntries(
@@ -32,7 +33,9 @@ describe('buildCsp', () => {
     expect(d['default-src']).toBe("'self'");
     expect(d['script-src']).toBe("'self' 'nonce-abc' 'strict-dynamic'");
     expect(d['style-src']).toBe("'self' 'unsafe-inline'");
-    expect(d['img-src']).toBe("'self' data: blob:");
+    // ESPN's image CDN (player headshots, team logos) is the only third-party source.
+    expect(d['img-src']).toBe("'self' data: blob: https://a.espncdn.com");
+    expect(d['img-src']).toContain(IMAGE_ORIGIN);
     expect(d['font-src']).toBe("'self'");
     expect(d['connect-src']).toBe("'self'");
     expect(d['frame-ancestors']).toBe("'none'");
