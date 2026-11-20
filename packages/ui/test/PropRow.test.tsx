@@ -102,6 +102,29 @@ describe('PropRowView', () => {
     });
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(3);
   });
+
+  it('shows the player headshot next to the name', () => {
+    const { container } = render(
+      <PropTable label="Props">
+        <PropRowView
+          row={makeRow({ playerId: 'p3112335' })}
+          favorite={false}
+          inSlip={false}
+          onToggleFavorite={() => {}}
+          onToggleSlip={() => {}}
+          activeWindow="l10"
+        />
+      </PropTable>,
+    );
+    expect(container.querySelector('img')?.getAttribute('src')).toContain(
+      '/i/headshots/nba/players/full/3112335.png',
+    );
+  });
+
+  it('shows the monogram when the player has no ESPN id', () => {
+    renderRow({ row: makeRow({ playerId: 'fixture-7' }) });
+    expect(screen.getByText('MD')).toBeInTheDocument();
+  });
 });
 
 describe('PropCard', () => {
@@ -127,5 +150,19 @@ describe('PropCard', () => {
       within(card).getByRole('button', { name: /add marcus dell over 24.5 pts to slip/i }),
     );
     expect(onToggleSlip).toHaveBeenCalledOnce();
+  });
+
+  it('shows the player headshot on the phone card', () => {
+    const { container } = render(
+      <PropCard
+        row={makeRow({ playerId: 'p1966' })}
+        favorite={false}
+        inSlip={false}
+        onToggleFavorite={() => {}}
+        onToggleSlip={() => {}}
+        activeWindow="l10"
+      />,
+    );
+    expect(container.querySelector('img')?.getAttribute('src')).toContain('/full/1966.png');
   });
 });

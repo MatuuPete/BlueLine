@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { filterFromRecord } from '../lib/board-params';
 import { shouldShowIntro } from '../lib/intro';
 import { parseTheme, themeCookie, THEME_SCRIPT } from '../lib/theme';
-import { monogram, shortDate, slateLabel, tipClock, tipTime, tipTimeBare } from '../lib/time';
+import { shortDate, slateLabel, tipClock, tipTime, tipTimeBare } from '../lib/time';
 
 describe('filterFromRecord (R11 for server pages)', () => {
   it('strips unknown keys and parses known ones', () => {
@@ -48,7 +48,7 @@ describe('theme cookie', () => {
   });
 });
 
-describe('time and name helpers', () => {
+describe('time helpers', () => {
   it('tip time in Philippine time', () => {
     // 7:30 PM ET on Nov 18 is 8:30 AM on Nov 19 in Manila.
     expect(tipTime('2026-11-19T00:30:00.000Z')).toBe('8:30 AM PHT');
@@ -60,11 +60,6 @@ describe('time and name helpers', () => {
   it('short and long dates from YYYY-MM-DD', () => {
     expect(shortDate('2026-11-16')).toBe('Nov 16');
     expect(slateLabel('2026-11-18')).toBe('Wednesday, November 18');
-  });
-  it('monograms', () => {
-    expect(monogram('Marcus Dell')).toBe('MD');
-    expect(monogram('Nene')).toBe('NE');
-    expect(monogram('Karl-Anthony Towns Jr.')).toBe('KT');
   });
 });
 

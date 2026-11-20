@@ -8,6 +8,7 @@ import { getDb } from '../../../lib/db';
 import { requireUserId } from '../../../lib/require-user';
 import { gameLine, gameStatus } from '../../../lib/game-format';
 import { addDaysYmd, slateLabel, validYmd } from '../../../lib/time';
+import { Matchup } from '../../_ui/Matchup';
 import styles from '../_ui/page.module.css';
 
 export const metadata: Metadata = { title: 'Games' };
@@ -70,9 +71,7 @@ export default async function GamesPage({
                 className={`${styles.card} ${styles.linkCard}`}
               >
                 <span className={`${styles.row} ${styles.spread}`}>
-                  <span className={styles.matchup}>
-                    {g.away.abbr} @ {g.home.abbr}
-                  </span>
+                  <Matchup away={g.away} home={g.home} logoSize={22} className={styles.matchup} />
                   <span className={styles.muted}>{gameStatus(g)}</span>
                 </span>
                 <span className={styles.muted}>

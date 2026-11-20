@@ -9,6 +9,7 @@ import { HitStrip } from './HitStrip';
 import {
   FavoriteButton,
   MarketLine,
+  PlayerHeadshot,
   PlayerName,
   playerMeta,
   propTitle,
@@ -40,10 +41,13 @@ export function PropRowView({
         <FavoriteButton row={row} favorite={favorite} onToggle={onToggleFavorite} />
       </div>
 
-      <div role="cell" className={cx(styles.cell, styles.stack)}>
-        <PlayerName row={row} href={href} linkComponent={linkComponent} />
-        <span className={styles.meta}>{playerMeta(row)}</span>
-        {tout ? <span className={styles.tout}>{tout}</span> : null}
+      <div role="cell" className={cx(styles.cell, styles.player)}>
+        <PlayerHeadshot row={row} size={36} />
+        <div className={styles.stack}>
+          <PlayerName row={row} href={href} linkComponent={linkComponent} />
+          <span className={styles.meta}>{playerMeta(row)}</span>
+          {tout ? <span className={styles.tout}>{tout}</span> : null}
+        </div>
       </div>
 
       <div role="cell" className={cx(styles.cell, styles.stack)}>

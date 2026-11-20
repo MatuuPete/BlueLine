@@ -25,7 +25,9 @@ export function buildCsp(nonce: string, { dev }: { dev: boolean }): string {
     "default-src 'self'",
     `script-src ${script.join(' ')}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    // ESPN's image CDN for player headshots and team logos (IMAGE_ORIGIN in @blueline/ui;
+    // hard-coded so the proxy bundle does not pull in the component library).
+    "img-src 'self' data: blob: https://a.espncdn.com",
     "font-src 'self'",
     "connect-src 'self'",
     "object-src 'none'",

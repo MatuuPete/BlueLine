@@ -105,16 +105,3 @@ export function addDaysYmd(ymd: string, days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
-
-const SUFFIXES = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v']);
-
-/** Generated monogram (spec §7: player icons are monograms): first and last name initials. */
-export function monogram(name: string): string {
-  const words = name
-    .trim()
-    .split(/[\s-]+/)
-    .filter((w) => w && !SUFFIXES.has(w.toLowerCase()));
-  if (words.length === 0) return '?';
-  if (words.length === 1) return words[0]!.slice(0, 2).toUpperCase();
-  return (words[0]!.charAt(0) + words[words.length - 1]!.charAt(0)).toUpperCase();
-}

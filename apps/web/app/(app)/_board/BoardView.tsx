@@ -20,6 +20,7 @@ import { useBoardFilter } from '../../../lib/use-board-filter';
 import { FilterRail } from '../_components/FilterRail';
 import { FilterSheet } from '../_components/FilterSheet';
 import { QuickFilters } from '../_components/QuickFilters';
+import { Matchup } from '../../_ui/Matchup';
 import styles from './board.module.css';
 import { BoardRows } from './BoardRows';
 import { PresetDialog } from './PresetDialog';
@@ -156,9 +157,7 @@ export function BoardView({
                 onClick={() => setFilter({ ...filter, games: on ? [] : [g.id] })}
               >
                 <span className={styles.gameLine}>
-                  <span className={styles.gameTitle}>
-                    {g.away.abbr} @ {g.home.abbr}
-                  </span>
+                  <Matchup away={g.away} home={g.home} logoSize={18} className={styles.gameTitle} />
                   <span className={styles.gameTip}>{tipTimeBare(g.tipAt)}</span>
                 </span>
                 <span className={styles.gameOdds}>{gameOdds(g)}</span>

@@ -378,7 +378,8 @@ The full token set (hover, segmented, badge, defense-chip and chrome tokens) liv
   - prop cards: strip, edge, defense chip, 5 heat cells, add button
   - full filters in a bottom sheet with a "Show N props" button
   - 4-tab bottom bar
-- **Player and team icons** are generated monograms. Sportsbooks are text badges, never logos.
+- **Player and team icons** are ESPN headshots and team logos, hot-linked from `a.espncdn.com` through its resizer (changed 2026-11-20 at the owner's request; the site is private and allowlisted). A missing image falls back to a generated monogram (players) or the abbreviation (teams). Sportsbooks are text badges, never logos.
+- **Times** print in Philippine time (PHT, `Asia/Manila`); slate dates stay on the NBA's Eastern calendar.
 - **PWA:** manifest, icons, offline shell (last loaded board readable offline).
 
 ### Pages and copy

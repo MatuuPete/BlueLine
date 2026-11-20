@@ -18,7 +18,7 @@ function slateText(games: GameSummary[]): string | undefined {
     .slice(0, 6)
     .map((g) => `${g.away.abbr} @ ${g.home.abbr} ${tipClock(g.tipAt)}`);
   const more = games.length > 6 ? ` · +${games.length - 6} more` : '';
-  return `Tonight · ${parts.join(' · ')}${more}`;
+  return `Today · ${parts.join(' · ')}${more}`;
 }
 
 /** Public intro (spec §7). Dark by default; the user's theme cookie wins. */

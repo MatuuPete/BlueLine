@@ -15,6 +15,7 @@ import {
 } from '@blueline/contracts';
 import { allWindows, consensusNoVig, hitRate, mean, median, statValue } from '@blueline/analytics';
 import {
+  Avatar,
   Badge,
   BOOK_SHORT,
   Button,
@@ -23,7 +24,9 @@ import {
   GameLogChart,
   HEAT_WINDOWS,
   HeatCell,
+  headshotUrl,
   MINUS,
+  monogram,
   ordinal,
   Segmented,
   TIER_LABELS,
@@ -41,7 +44,7 @@ import {
   type SplitContext,
 } from '../../../../../lib/detail-splits';
 import { formatOdds, type OddsFormat } from '../../../../../lib/odds-format';
-import { dateTime, dayOf, monogram, shortDate, tipTime } from '../../../../../lib/time';
+import { dateTime, dayOf, shortDate, tipTime } from '../../../../../lib/time';
 import { useSlip } from '../../../_shell/SlipContext';
 import { useFavorites } from '../../../_board/useFavorites';
 import styles from './detail.module.css';
@@ -263,16 +266,19 @@ export function PropDetailView({
 
       <section aria-label="Player and prop" className={styles.header}>
         <div className={styles.who}>
-          <div aria-hidden="true" className={styles.monogram}>
-            {monogram(player.name)}
-          </div>
+          <Avatar
+            src={headshotUrl(player.id, 88)}
+            fallback={monogram(player.name)}
+            size={88}
+            shape="rounded"
+          />
           <div className={styles.whoText}>
             <h1 className={styles.h1}>{player.name}</h1>
             <p className={styles.meta}>{meta}</p>
             {outMates.length > 0 ? (
               <p className={styles.tout}>
                 {outMates.map((t) => shortName(t.name)).join(', ')}{' '}
-                {outMates.length === 1 ? 'is' : 'are'} out tonight
+                {outMates.length === 1 ? 'is' : 'are'} out
               </p>
             ) : null}
           </div>
